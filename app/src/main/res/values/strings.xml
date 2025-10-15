@@ -25,5 +25,8 @@
     <!-- Activity Search -->
 
     <string name="input_hint">Поиск</string>
+    <string name="no_tracks">Ничего не нашлось</string>
+    <string name="connection_error">Проблемы со связью\n\nЗагрузка не удалась. Проверьте\nподключение к интернету</string>
+    <string name="refresh">Обновить</string>
 
 </resources>
