@@ -3,8 +3,8 @@ package com.example.playlistmaker
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
+import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -37,11 +37,17 @@ class SettingsActivity : AppCompatActivity() {
             termsApp()
         }
 
+        val themeSwitcher = findViewById<Switch>(R.id.themesSwitcher)
+        themeSwitcher.setOnCheckedChangeListener { switcher, checked ->
+            (applicationContext as App).switchTheme(checked)
+        }
+
     }
+
     private fun shareApp() {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT,getString(R.string.course_url))
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.course_url))
         }
         startActivity(shareIntent)
     }
