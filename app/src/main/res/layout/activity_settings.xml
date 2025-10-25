@@ -43,6 +43,7 @@
                 android:text="@string/switch_themes" />
 
             <Switch
+                android:id="@+id/themesSwitcher"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="center_vertical" />
