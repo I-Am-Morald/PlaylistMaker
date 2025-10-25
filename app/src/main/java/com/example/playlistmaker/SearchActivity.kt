@@ -33,17 +33,24 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private var lastText = ""
+
     private lateinit var inputEditText: EditText
     private lateinit var historyTitle: TextView
     private lateinit var historyClearButton: Button
+    private lateinit var backToMainButton: ImageView
     private lateinit var recyclerView: RecyclerView
+    private lateinit var linearLayout: LinearLayout
+    private lateinit var clearButton: ImageView
+    private lateinit var noticeLayout: LinearLayout
+    private lateinit var noticeImage: ImageView
+    private lateinit var noticeText: TextView
+    private lateinit var noticeRefreshButton: Button
 
     private val tracksList: MutableList<Track> = mutableListOf()
     private val retrofit = Retrofit.Builder()
         .baseUrl(ITUNES_SEARCH_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-
     private val iTunesService = retrofit.create(iTunesApi::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,22 +60,11 @@ class SearchActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(SearchHistory.HISTORY_KEY, MODE_PRIVATE)
         var historyList = SearchHistory(prefs).getHistory()
 
-        val backToMainButton = findViewById<ImageView>(R.id.back_button)
+        initViews()
 
         backToMainButton.setOnClickListener {
             finish()
         }
-
-        val linearLayout = findViewById<LinearLayout>(R.id.container)
-        val inputEditText = findViewById<EditText>(R.id.searchEditText)
-        val clearButton = findViewById<ImageView>(R.id.clearIcon)
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
-        val noticeLayout = findViewById<LinearLayout>(R.id.notice_layout)
-        val noticeImage = findViewById<ImageView>(R.id.notice_image)
-        val noticeText = findViewById<TextView>(R.id.notice_text)
-        val noticeRefreshButton = findViewById<Button>(R.id.refresh_button)
-        val historyTitle = findViewById<TextView>(R.id.history_title)
-        val historyClearButton = findViewById<Button>(R.id.clear_history)
 
         clearButton.setOnClickListener {
             inputEditText.setText("")
@@ -78,9 +74,7 @@ class SearchActivity : AppCompatActivity() {
             noticeLayout.isVisible = false
             recyclerView.isVisible = false
             if (historyList.isNotEmpty()) {
-                historyTitle.isVisible = true
-                recyclerView.isVisible = true
-                historyClearButton.isVisible = true
+                showHistory(true)
             }
         }
 
@@ -94,11 +88,8 @@ class SearchActivity : AppCompatActivity() {
         inputEditText.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus && inputEditText.text.isEmpty()) {
                 recyclerView.adapter = historyAdapter
-                historyAdapter.notifyDataSetChanged()
                 if (historyList.isNotEmpty()) {
-                    historyTitle.isVisible = true
-                    recyclerView.isVisible = true
-                    historyClearButton.isVisible = true
+                    showHistory(true)
                 }
             } else {
                 historyTitle.isVisible = false
@@ -109,15 +100,12 @@ class SearchActivity : AppCompatActivity() {
         historyClearButton.setOnClickListener {
             SearchHistory(prefs).clearHistory()
             historyList = SearchHistory(prefs).getHistory()
-            historyTitle.isVisible = false
-            recyclerView.isVisible = false
-            historyClearButton.isVisible = false
+            showHistory(false)
         }
 
         val simpleTextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 recyclerView.adapter = historyAdapter
-                historyAdapter.notifyDataSetChanged()
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -126,9 +114,7 @@ class SearchActivity : AppCompatActivity() {
 
                 if (inputEditText.hasFocus() && s?.isEmpty() == true) {
                     if (historyList.isNotEmpty()) {
-                        historyTitle.isVisible = true
-                        recyclerView.isVisible = true
-                        historyClearButton.isVisible = true
+                        showHistory(true)
                     }
                 } else {
                     recyclerView.adapter = tracksAdapter
@@ -162,9 +148,9 @@ class SearchActivity : AppCompatActivity() {
                             if (tracksList.isEmpty()) {
                                 recyclerView.isVisible = false
                                 noticeLayout.isVisible = true
+                                noticeRefreshButton.isVisible = false
                                 noticeImage.setImageResource(R.drawable.ic_no_tracks_120)
                                 noticeText.setText(R.string.no_tracks)
-                                noticeRefreshButton.isVisible = false
                             } else {
                                 recyclerView.isVisible = true
                                 noticeLayout.isVisible = false
@@ -172,18 +158,18 @@ class SearchActivity : AppCompatActivity() {
                         } else {
                             recyclerView.isVisible = false
                             noticeLayout.isVisible = true
+                            noticeRefreshButton.isVisible = true
                             noticeImage.setImageResource(R.drawable.ic_internet_120)
                             noticeText.setText(R.string.connection_error)
-                            noticeRefreshButton.isVisible = true
                         }
                     }
 
                     override fun onFailure(call: Call<TrackResponse>, t: Throwable) {
                         recyclerView.isVisible = false
                         noticeLayout.isVisible = true
+                        noticeRefreshButton.isVisible = true
                         noticeImage.setImageResource(R.drawable.ic_internet_120)
                         noticeText.setText(R.string.connection_error)
-                        noticeRefreshButton.isVisible = true
                     }
 
                 })
@@ -202,7 +188,26 @@ class SearchActivity : AppCompatActivity() {
             searchQuery()
         }
 
+    }
 
+    private fun initViews() {
+        linearLayout = findViewById(R.id.container)
+        backToMainButton = findViewById(R.id.back_button)
+        inputEditText = findViewById(R.id.searchEditText)
+        clearButton = findViewById(R.id.clearIcon)
+        recyclerView = findViewById(R.id.recyclerView)
+        noticeLayout = findViewById(R.id.notice_layout)
+        noticeImage = findViewById(R.id.notice_image)
+        noticeText = findViewById(R.id.notice_text)
+        noticeRefreshButton = findViewById(R.id.refresh_button)
+        historyTitle = findViewById(R.id.history_title)
+        historyClearButton = findViewById(R.id.clear_history)
+    }
+
+    private fun showHistory(visibility: Boolean) {
+        historyTitle.isVisible = visibility
+        recyclerView.isVisible = visibility
+        historyClearButton.isVisible = visibility
     }
 
     private var searchValue: String = ""
@@ -211,7 +216,6 @@ class SearchActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putString(PRODUCT_AMOUNT, searchValue)
     }
-
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)

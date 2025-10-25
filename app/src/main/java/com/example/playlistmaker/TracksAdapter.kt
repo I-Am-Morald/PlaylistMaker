@@ -19,7 +19,7 @@ class TracksAdapter(
         holder.bind(track)
         holder.itemView.setOnClickListener {
             onTrackClick(track)
-
+            notifyDataSetChanged()
         }
     }
 
