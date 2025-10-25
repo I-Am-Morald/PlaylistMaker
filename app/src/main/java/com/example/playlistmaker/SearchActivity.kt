@@ -34,10 +34,11 @@ class SearchActivity : AppCompatActivity() {
 
     private var lastText = ""
     private lateinit var inputEditText: EditText
+    private lateinit var historyTitle: TextView
+    private lateinit var historyClearButton: Button
+    private lateinit var recyclerView: RecyclerView
+
     private val tracksList: MutableList<Track> = mutableListOf()
-    //val prefs = getSharedPreferences(SearchHistory.HISTORY_KEY, MODE_PRIVATE)
-    //val historyList = SearchHistory(prefs).getHistory()
-    //val historyList: MutableList<Track> = mutableListOf()
     private val retrofit = Retrofit.Builder()
         .baseUrl(ITUNES_SEARCH_URL)
         .addConverterFactory(GsonConverterFactory.create())
@@ -74,22 +75,18 @@ class SearchActivity : AppCompatActivity() {
             val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager
             inputMethodManager?.hideSoftInputFromWindow(it.windowToken, 0)
             tracksList.clear()
-            if(historyList.isEmpty()) {
-                historyTitle.isVisible = false
-                recyclerView.isVisible = false
-                historyClearButton.isVisible = false
-            }
             noticeLayout.isVisible = false
-            historyTitle.isVisible = true
-            historyClearButton.isVisible = true
-
+            recyclerView.isVisible = false
+            if (historyList.isNotEmpty()) {
+                historyTitle.isVisible = true
+                recyclerView.isVisible = true
+                historyClearButton.isVisible = true
+            }
         }
 
         val tracksAdapter = TracksAdapter(tracksList) { track ->
-            // Обработка клика
             historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
         }
-        //recyclerView.adapter = tracksAdapter
         val historyAdapter = TracksAdapter(historyList) { track ->
             historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
         }
@@ -98,7 +95,7 @@ class SearchActivity : AppCompatActivity() {
             if (hasFocus && inputEditText.text.isEmpty()) {
                 recyclerView.adapter = historyAdapter
                 historyAdapter.notifyDataSetChanged()
-                if(historyList.isNotEmpty()) {
+                if (historyList.isNotEmpty()) {
                     historyTitle.isVisible = true
                     recyclerView.isVisible = true
                     historyClearButton.isVisible = true
@@ -111,7 +108,7 @@ class SearchActivity : AppCompatActivity() {
 
         historyClearButton.setOnClickListener {
             SearchHistory(prefs).clearHistory()
-            historyAdapter.notifyDataSetChanged()
+            historyList = SearchHistory(prefs).getHistory()
             historyTitle.isVisible = false
             recyclerView.isVisible = false
             historyClearButton.isVisible = false
@@ -128,7 +125,7 @@ class SearchActivity : AppCompatActivity() {
                 clearButton.isVisible = !s.isNullOrEmpty()
 
                 if (inputEditText.hasFocus() && s?.isEmpty() == true) {
-                    if(historyList.isNotEmpty()) {
+                    if (historyList.isNotEmpty()) {
                         historyTitle.isVisible = true
                         recyclerView.isVisible = true
                         historyClearButton.isVisible = true
@@ -204,6 +201,7 @@ class SearchActivity : AppCompatActivity() {
         noticeRefreshButton.setOnClickListener {
             searchQuery()
         }
+
 
     }
 

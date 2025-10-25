@@ -22,7 +22,6 @@ class SearchHistory(val sharedPreferences: SharedPreferences) {
         } catch (e: JsonSyntaxException) {
             return mutableListOf()
         }
-        //Спасибо, Алиса. Я разберусь, что не так позже.
     }
 
     // запись
