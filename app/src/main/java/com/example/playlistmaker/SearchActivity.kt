@@ -1,6 +1,7 @@
 package com.example.playlistmaker
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -80,9 +81,15 @@ class SearchActivity : AppCompatActivity() {
 
         val tracksAdapter = TracksAdapter(tracksList) { track ->
             historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
+            val intent = Intent(this@SearchActivity, MediaPlayerActivity::class.java)
+            intent.putExtra("track", track)
+            startActivity(intent)
         }
         val historyAdapter = TracksAdapter(historyList) { track ->
             historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
+            val intent = Intent(this@SearchActivity, MediaPlayerActivity::class.java)
+            intent.putExtra("track", track)
+            startActivity(intent)
         }
 
         inputEditText.setOnFocusChangeListener { view, hasFocus ->
