@@ -1,7 +1,10 @@
 package com.example.playlistmaker
 
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -14,6 +17,15 @@ import java.util.Locale
 
 
 class MediaPlayerActivity : AppCompatActivity() {
+
+    companion object {
+        private const val STATE_DEFAULT = 0
+        private const val STATE_PREPARED = 1
+        private const val STATE_PLAYING = 2
+        private const val STATE_PAUSED = 3
+        private const val UPDATE_INTERVAL = 500L
+    }
+
     private lateinit var backButton: ImageView
     private lateinit var trackCover: ImageView
     private lateinit var mediaTrackName: TextView
@@ -29,6 +41,11 @@ class MediaPlayerActivity : AppCompatActivity() {
     private lateinit var yearValue: TextView
     private lateinit var genreValue: TextView
     private lateinit var countryValue: TextView
+
+    private var previewUrl: String? = ""
+    private var playerState = STATE_DEFAULT
+    private var mediaPlayer = MediaPlayer()
+    private val progressHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,9 +70,10 @@ class MediaPlayerActivity : AppCompatActivity() {
             val trackTime =
                 SimpleDateFormat("mm:ss", Locale.getDefault()).format(it.trackTimeMillis.toLong())
             durationValue.text = trackTime
-            currentDuration.text = trackTime
+            //currentDuration.text = trackTime
 
             val artworkUrl = it.getCoverArtwork()
+            previewUrl = it.previewUrl
 
             Glide.with(this)
                 .load(artworkUrl)
@@ -82,6 +100,12 @@ class MediaPlayerActivity : AppCompatActivity() {
             genreValue.text = it.primaryGenreName ?: getString(R.string.unknown)
             countryValue.text = it.country ?: getString(R.string.unknown)
         }
+
+        preparePlayer()
+
+        playButton.setOnClickListener {
+            playbackControl()
+        }
     }
 
     private fun initViews() {
@@ -100,5 +124,80 @@ class MediaPlayerActivity : AppCompatActivity() {
         yearValue = findViewById(R.id.year_value)
         genreValue = findViewById(R.id.genre_value)
         countryValue = findViewById(R.id.country_value)
+    }
+
+    private fun progressTask() {
+        if (playerState == STATE_PLAYING) {
+            currentDuration.text =
+                SimpleDateFormat("mm:ss", Locale.getDefault()).format(mediaPlayer.currentPosition)
+        }
+    }
+
+    private fun startProgressTask() {
+        progressHandler.post(object : Runnable {
+            override fun run() {
+                progressTask()
+                progressHandler.postDelayed(this, UPDATE_INTERVAL)
+            }
+        })
+    }
+
+    private fun stopProgressTask() {
+        progressHandler.removeCallbacksAndMessages(null)
+    }
+
+    private fun playbackControl() {
+        when (playerState) {
+            STATE_PLAYING -> {
+                pausePlayer()
+            }
+
+            STATE_PREPARED, STATE_PAUSED -> {
+                startPlayer()
+            }
+        }
+    }
+
+    private fun preparePlayer() {
+        if (previewUrl.isNullOrEmpty()) {
+            //currentDuration.text = "N/A"  // Трек 'Rammstein - Du Hast : trackId = 1390562591' не дает URLa
+            return
+        }
+        mediaPlayer.setDataSource(previewUrl)
+        mediaPlayer.prepareAsync()
+        mediaPlayer.setOnPreparedListener {
+            playButton.isEnabled = true
+            playerState = STATE_PREPARED
+        }
+        mediaPlayer.setOnCompletionListener {
+            playButton.setImageResource(R.drawable.ic_play_button_100)
+            currentDuration.text = "00:00"
+            playerState = STATE_PREPARED
+        }
+    }
+
+    private fun startPlayer() {
+        mediaPlayer.start()
+        playButton.setImageResource(R.drawable.ic_pause_button_100)
+        playerState = STATE_PLAYING
+        startProgressTask()
+    }
+
+    private fun pausePlayer() {
+        mediaPlayer.pause()
+        playButton.setImageResource(R.drawable.ic_play_button_100)
+        playerState = STATE_PAUSED
+        stopProgressTask()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pausePlayer()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer.release()
+        stopProgressTask()
     }
 }
