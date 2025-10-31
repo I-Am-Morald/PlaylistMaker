@@ -1,12 +1,19 @@
 package com.example.playlistmaker
 
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import java.text.SimpleDateFormat
@@ -14,6 +21,18 @@ import java.util.Locale
 
 
 class MediaPlayerActivity : AppCompatActivity() {
+
+    companion object {
+        private const val UPDATE_INTERVAL = 500L
+    }
+
+    enum class PlayerState {
+        DEFAULT,
+        PREPARED,
+        PLAYING,
+        PAUSED
+    }
+
     private lateinit var backButton: ImageView
     private lateinit var trackCover: ImageView
     private lateinit var mediaTrackName: TextView
@@ -30,9 +49,21 @@ class MediaPlayerActivity : AppCompatActivity() {
     private lateinit var genreValue: TextView
     private lateinit var countryValue: TextView
 
+    private var previewUrl: String? = ""
+    private var playerState = PlayerState.DEFAULT
+    private var mediaPlayer = MediaPlayer()
+    private val progressHandler = Handler(Looper.getMainLooper())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mediaplayer)
+
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = statusBar.top)
+            insets
+        }
 
         @Suppress("DEPRECATION")
         val track = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -53,9 +84,10 @@ class MediaPlayerActivity : AppCompatActivity() {
             val trackTime =
                 SimpleDateFormat("mm:ss", Locale.getDefault()).format(it.trackTimeMillis.toLong())
             durationValue.text = trackTime
-            currentDuration.text = trackTime
+            //currentDuration.text = trackTime
 
             val artworkUrl = it.getCoverArtwork()
+            previewUrl = it.previewUrl
 
             Glide.with(this)
                 .load(artworkUrl)
@@ -82,6 +114,12 @@ class MediaPlayerActivity : AppCompatActivity() {
             genreValue.text = it.primaryGenreName ?: getString(R.string.unknown)
             countryValue.text = it.country ?: getString(R.string.unknown)
         }
+
+        preparePlayer()
+
+        playButton.setOnClickListener {
+            playbackControl()
+        }
     }
 
     private fun initViews() {
@@ -100,5 +138,81 @@ class MediaPlayerActivity : AppCompatActivity() {
         yearValue = findViewById(R.id.year_value)
         genreValue = findViewById(R.id.genre_value)
         countryValue = findViewById(R.id.country_value)
+    }
+
+    private fun progressTask() {
+        if (playerState == PlayerState.PLAYING) {
+            currentDuration.text =
+                SimpleDateFormat("mm:ss", Locale.getDefault()).format(mediaPlayer.currentPosition)
+        }
+    }
+
+    private fun startProgressTask() {
+        progressHandler.post(object : Runnable {
+            override fun run() {
+                progressTask()
+                progressHandler.postDelayed(this, UPDATE_INTERVAL)
+            }
+        })
+    }
+
+    private fun stopProgressTask() {
+        progressHandler.removeCallbacksAndMessages(null)
+    }
+
+    private fun playbackControl() {
+        when (playerState) {
+            PlayerState.PLAYING -> {
+                pausePlayer()
+            }
+
+            PlayerState.PREPARED, PlayerState.PAUSED -> {
+                startPlayer()
+            }
+            else -> Unit
+        }
+    }
+
+    private fun preparePlayer() {
+        if (previewUrl.isNullOrEmpty()) {
+            //currentDuration.text = "N/A"  // Трек 'Rammstein - Du Hast : trackId = 1390562591' не дает URLa
+            return
+        }
+        mediaPlayer.setDataSource(previewUrl)
+        mediaPlayer.prepareAsync()
+        mediaPlayer.setOnPreparedListener {
+            playButton.isEnabled = true
+            playerState = PlayerState.PREPARED
+        }
+        mediaPlayer.setOnCompletionListener {
+            playButton.setImageResource(R.drawable.ic_play_button_100)
+            currentDuration.text = "00:00"
+            playerState = PlayerState.PREPARED
+        }
+    }
+
+    private fun startPlayer() {
+        mediaPlayer.start()
+        playButton.setImageResource(R.drawable.ic_pause_button_100)
+        playerState = PlayerState.PLAYING
+        startProgressTask()
+    }
+
+    private fun pausePlayer() {
+        mediaPlayer.pause()
+        playButton.setImageResource(R.drawable.ic_play_button_100)
+        playerState = PlayerState.PAUSED
+        stopProgressTask()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pausePlayer()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer.release()
+        stopProgressTask()
     }
 }

@@ -3,6 +3,8 @@ package com.example.playlistmaker
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -12,12 +14,14 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.RecyclerView
 import retrofit2.Call
 import retrofit2.Callback
@@ -31,9 +35,17 @@ class SearchActivity : AppCompatActivity() {
     companion object {
         const val PRODUCT_AMOUNT = "PRODUCT_AMOUNT"
         const val ITUNES_SEARCH_URL = "https://itunes.apple.com"
+        private const val CLICK_DEBOUNCE_DELAY = 1000L
+        private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
 
     private var lastText = ""
+    private var isClickAllowed = true
+    private val handler = Handler(Looper.getMainLooper())
+    private val searchRunnable = Runnable { searchQuery() }
+
+    private lateinit var tracksAdapter: TracksAdapter
+    private lateinit var historyAdapter: TracksAdapter
 
     private lateinit var inputEditText: EditText
     private lateinit var historyTitle: TextView
@@ -46,6 +58,7 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var noticeImage: ImageView
     private lateinit var noticeText: TextView
     private lateinit var noticeRefreshButton: Button
+    private lateinit var progressBar: ProgressBar
 
     private val tracksList: MutableList<Track> = mutableListOf()
     private val retrofit = Retrofit.Builder()
@@ -57,6 +70,13 @@ class SearchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
+
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = statusBar.top)
+            insets
+        }
 
         val prefs = getSharedPreferences(SearchHistory.HISTORY_KEY, MODE_PRIVATE)
         var historyList = SearchHistory(prefs).getHistory()
@@ -79,17 +99,21 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        val tracksAdapter = TracksAdapter(tracksList) { track ->
-            historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
-            val intent = Intent(this@SearchActivity, MediaPlayerActivity::class.java)
-            intent.putExtra("track", track)
-            startActivity(intent)
+        tracksAdapter = TracksAdapter(tracksList) { track ->
+            if (clickDebounce()) {
+                historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
+                val intent = Intent(this@SearchActivity, MediaPlayerActivity::class.java)
+                intent.putExtra("track", track)
+                startActivity(intent)
+            }
         }
-        val historyAdapter = TracksAdapter(historyList) { track ->
-            historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
-            val intent = Intent(this@SearchActivity, MediaPlayerActivity::class.java)
-            intent.putExtra("track", track)
-            startActivity(intent)
+        historyAdapter = TracksAdapter(historyList) { track ->
+            if (clickDebounce()) {
+                historyList = SearchHistory(prefs).addTrackToHistory(historyList, track)
+                val intent = Intent(this@SearchActivity, MediaPlayerActivity::class.java)
+                intent.putExtra("track", track)
+                startActivity(intent)
+            }
         }
 
         inputEditText.setOnFocusChangeListener { view, hasFocus ->
@@ -118,6 +142,7 @@ class SearchActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 lastText = s.toString()
                 clearButton.isVisible = !s.isNullOrEmpty()
+                searchDebounce()
 
                 if (inputEditText.hasFocus() && s?.isEmpty() == true) {
                     if (historyList.isNotEmpty()) {
@@ -137,51 +162,7 @@ class SearchActivity : AppCompatActivity() {
 
         inputEditText.addTextChangedListener(simpleTextWatcher)
 
-        fun searchQuery() {
-            if (inputEditText.text.isNotEmpty()) {
-                iTunesService.search(inputEditText.text.toString()).enqueue(object :
-                    Callback<TrackResponse> {
-                    override fun onResponse(
-                        call: Call<TrackResponse>,
-                        response: Response<TrackResponse>
-                    ) {
-                        if (response.isSuccessful()) {
-                            tracksList.clear()
-                            val results = response.body()?.results ?: emptyList()
-                            if (results.isNotEmpty()) {
-                                tracksList.addAll(results)
-                                tracksAdapter.notifyDataSetChanged()
-                            }
-                            if (tracksList.isEmpty()) {
-                                recyclerView.isVisible = false
-                                noticeLayout.isVisible = true
-                                noticeRefreshButton.isVisible = false
-                                noticeImage.setImageResource(R.drawable.ic_no_tracks_120)
-                                noticeText.setText(R.string.no_tracks)
-                            } else {
-                                recyclerView.isVisible = true
-                                noticeLayout.isVisible = false
-                            }
-                        } else {
-                            recyclerView.isVisible = false
-                            noticeLayout.isVisible = true
-                            noticeRefreshButton.isVisible = true
-                            noticeImage.setImageResource(R.drawable.ic_internet_120)
-                            noticeText.setText(R.string.connection_error)
-                        }
-                    }
 
-                    override fun onFailure(call: Call<TrackResponse>, t: Throwable) {
-                        recyclerView.isVisible = false
-                        noticeLayout.isVisible = true
-                        noticeRefreshButton.isVisible = true
-                        noticeImage.setImageResource(R.drawable.ic_internet_120)
-                        noticeText.setText(R.string.connection_error)
-                    }
-
-                })
-            }
-        }
 
         inputEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -209,6 +190,7 @@ class SearchActivity : AppCompatActivity() {
         noticeRefreshButton = findViewById(R.id.refresh_button)
         historyTitle = findViewById(R.id.history_title)
         historyClearButton = findViewById(R.id.clear_history)
+        progressBar = findViewById(R.id.progressBar)
     }
 
     private fun showHistory(visibility: Boolean) {
@@ -228,6 +210,69 @@ class SearchActivity : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         searchValue = savedInstanceState.getString(PRODUCT_AMOUNT, "")
         inputEditText.setText(searchValue)
+    }
+
+    private fun clickDebounce(): Boolean {
+        val current = isClickAllowed
+        if (isClickAllowed) {
+            isClickAllowed = false
+            handler.postDelayed({ isClickAllowed = true }, CLICK_DEBOUNCE_DELAY)
+        }
+        return current
+    }
+
+    fun searchQuery() {
+        if (inputEditText.text.isNotEmpty()) {
+            progressBar.isVisible = true
+            iTunesService.search(inputEditText.text.toString()).enqueue(object :
+                Callback<TrackResponse> {
+                override fun onResponse(
+                    call: Call<TrackResponse>,
+                    response: Response<TrackResponse>
+                ) {
+                    progressBar.isVisible = false
+                    if (response.isSuccessful()) {
+                        tracksList.clear()
+                        val results = response.body()?.results ?: emptyList()
+                        if (results.isNotEmpty()) {
+                            tracksList.addAll(results)
+                            tracksAdapter.notifyDataSetChanged()
+                        }
+                        if (tracksList.isEmpty()) {
+                            recyclerView.isVisible = false
+                            noticeLayout.isVisible = true
+                            noticeRefreshButton.isVisible = false
+                            noticeImage.setImageResource(R.drawable.ic_no_tracks_120)
+                            noticeText.setText(R.string.no_tracks)
+                        } else {
+                            recyclerView.isVisible = true
+                            noticeLayout.isVisible = false
+                        }
+                    } else {
+                        recyclerView.isVisible = false
+                        noticeLayout.isVisible = true
+                        noticeRefreshButton.isVisible = true
+                        noticeImage.setImageResource(R.drawable.ic_internet_120)
+                        noticeText.setText(R.string.connection_error)
+                    }
+                }
+
+                override fun onFailure(call: Call<TrackResponse>, t: Throwable) {
+                    recyclerView.isVisible = false
+                    noticeLayout.isVisible = true
+                    noticeRefreshButton.isVisible = true
+                    progressBar.isVisible = false
+                    noticeImage.setImageResource(R.drawable.ic_internet_120)
+                    noticeText.setText(R.string.connection_error)
+                }
+
+            })
+        }
+    }
+
+    private fun searchDebounce() {
+        handler.removeCallbacks(searchRunnable)
+        handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
     }
 }
 
