@@ -8,8 +8,12 @@ import android.os.Looper
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import java.text.SimpleDateFormat
@@ -19,11 +23,14 @@ import java.util.Locale
 class MediaPlayerActivity : AppCompatActivity() {
 
     companion object {
-        private const val STATE_DEFAULT = 0
-        private const val STATE_PREPARED = 1
-        private const val STATE_PLAYING = 2
-        private const val STATE_PAUSED = 3
         private const val UPDATE_INTERVAL = 500L
+    }
+
+    enum class PlayerState {
+        DEFAULT,
+        PREPARED,
+        PLAYING,
+        PAUSED
     }
 
     private lateinit var backButton: ImageView
@@ -43,13 +50,20 @@ class MediaPlayerActivity : AppCompatActivity() {
     private lateinit var countryValue: TextView
 
     private var previewUrl: String? = ""
-    private var playerState = STATE_DEFAULT
+    private var playerState = PlayerState.DEFAULT
     private var mediaPlayer = MediaPlayer()
     private val progressHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mediaplayer)
+
+        enableEdgeToEdge()
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(top = statusBar.top)
+            insets
+        }
 
         @Suppress("DEPRECATION")
         val track = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -127,7 +141,7 @@ class MediaPlayerActivity : AppCompatActivity() {
     }
 
     private fun progressTask() {
-        if (playerState == STATE_PLAYING) {
+        if (playerState == PlayerState.PLAYING) {
             currentDuration.text =
                 SimpleDateFormat("mm:ss", Locale.getDefault()).format(mediaPlayer.currentPosition)
         }
@@ -148,13 +162,14 @@ class MediaPlayerActivity : AppCompatActivity() {
 
     private fun playbackControl() {
         when (playerState) {
-            STATE_PLAYING -> {
+            PlayerState.PLAYING -> {
                 pausePlayer()
             }
 
-            STATE_PREPARED, STATE_PAUSED -> {
+            PlayerState.PREPARED, PlayerState.PAUSED -> {
                 startPlayer()
             }
+            else -> Unit
         }
     }
 
@@ -167,26 +182,26 @@ class MediaPlayerActivity : AppCompatActivity() {
         mediaPlayer.prepareAsync()
         mediaPlayer.setOnPreparedListener {
             playButton.isEnabled = true
-            playerState = STATE_PREPARED
+            playerState = PlayerState.PREPARED
         }
         mediaPlayer.setOnCompletionListener {
             playButton.setImageResource(R.drawable.ic_play_button_100)
             currentDuration.text = "00:00"
-            playerState = STATE_PREPARED
+            playerState = PlayerState.PREPARED
         }
     }
 
     private fun startPlayer() {
         mediaPlayer.start()
         playButton.setImageResource(R.drawable.ic_pause_button_100)
-        playerState = STATE_PLAYING
+        playerState = PlayerState.PLAYING
         startProgressTask()
     }
 
     private fun pausePlayer() {
         mediaPlayer.pause()
         playButton.setImageResource(R.drawable.ic_play_button_100)
-        playerState = STATE_PAUSED
+        playerState = PlayerState.PAUSED
         stopProgressTask()
     }
 
