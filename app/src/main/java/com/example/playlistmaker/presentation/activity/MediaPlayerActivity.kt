@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.activity
 
 import android.media.MediaPlayer
 import android.os.Build
@@ -16,9 +16,10 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.models.Track
 import java.text.SimpleDateFormat
 import java.util.Locale
-
 
 class MediaPlayerActivity : AppCompatActivity() {
 
@@ -59,11 +60,8 @@ class MediaPlayerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_mediaplayer)
 
         enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
-            val statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            view.updatePadding(top = statusBar.top)
-            insets
-        }
+
+        setupEdgeToEdge()
 
         @Suppress("DEPRECATION")
         val track = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -84,7 +82,6 @@ class MediaPlayerActivity : AppCompatActivity() {
             val trackTime =
                 SimpleDateFormat("mm:ss", Locale.getDefault()).format(it.trackTimeMillis.toLong())
             durationValue.text = trackTime
-            //currentDuration.text = trackTime
 
             val artworkUrl = it.getCoverArtwork()
             previewUrl = it.previewUrl
@@ -169,6 +166,7 @@ class MediaPlayerActivity : AppCompatActivity() {
             PlayerState.PREPARED, PlayerState.PAUSED -> {
                 startPlayer()
             }
+
             else -> Unit
         }
     }
@@ -214,5 +212,19 @@ class MediaPlayerActivity : AppCompatActivity() {
         super.onDestroy()
         mediaPlayer.release()
         stopProgressTask()
+    }
+
+    private fun setupEdgeToEdge() {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
+            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navigationBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+
+            view.updatePadding(
+                top = statusBarInsets.top,
+                bottom = navigationBarInsets.bottom
+            )
+
+            insets
+        }
     }
 }

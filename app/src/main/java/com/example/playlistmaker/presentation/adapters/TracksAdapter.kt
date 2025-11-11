@@ -1,8 +1,10 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.models.Track
 
 class TracksAdapter(
     private val tracks: MutableList<Track>,
@@ -17,10 +19,7 @@ class TracksAdapter(
     override fun onBindViewHolder(holder: TracksViewHolder, position: Int) {
         val track = tracks[position]
         holder.bind(track)
-        holder.itemView.setOnClickListener {
-            onTrackClick(track)
-            notifyDataSetChanged()
-        }
+        holder.itemView.setOnClickListener { onTrackClick(track) }
     }
 
     override fun getItemCount(): Int {
