@@ -2,21 +2,21 @@ package com.example.playlistmaker.creator
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.playlistmaker.data.network.RetrofitNetworkClient
-import com.example.playlistmaker.data.repository.SearchHistoryRepositoryImpl
-import com.example.playlistmaker.data.repository.SettingsRepositoryImpl
-import com.example.playlistmaker.data.repository.TrackRepositoryImpl
-import com.example.playlistmaker.data.storage.SharedPreferencesStorage
-import com.example.playlistmaker.domain.api.SearchHistoryRepository
-import com.example.playlistmaker.domain.api.SettingsRepository
-import com.example.playlistmaker.domain.api.TrackRepository
-import com.example.playlistmaker.domain.api.TrackInteractor
-import com.example.playlistmaker.domain.impl.TrackInteractorImpl
-import com.example.playlistmaker.domain.usecase.AddTrackToSearchHistoryUseCase
-import com.example.playlistmaker.domain.usecase.ClearSearchHistoryUseCase
-import com.example.playlistmaker.domain.usecase.GetSearchHistoryUseCase
-import com.example.playlistmaker.domain.usecase.GetThemeSwitcherUseCase
-import com.example.playlistmaker.domain.usecase.SetThemeSwitcherUseCase
+import com.example.playlistmaker.search.data.network.RetrofitNetworkClient
+import com.example.playlistmaker.search.data.repository.SearchHistoryRepositoryImpl
+import com.example.playlistmaker.settings.data.repository.SettingsRepositoryImpl
+import com.example.playlistmaker.search.data.repository.TrackRepositoryImpl
+import com.example.playlistmaker.settings.data.storage.SharedPreferencesStorage
+import com.example.playlistmaker.search.domain.api.SearchHistoryRepository
+import com.example.playlistmaker.settings.domain.api.SettingsRepository
+import com.example.playlistmaker.search.domain.api.TrackRepository
+import com.example.playlistmaker.search.domain.api.TrackInteractor
+import com.example.playlistmaker.search.domain.impl.TrackInteractorImpl
+import com.example.playlistmaker.search.domain.usecase.AddTrackToSearchHistoryUseCase
+import com.example.playlistmaker.search.domain.usecase.ClearSearchHistoryUseCase
+import com.example.playlistmaker.search.domain.usecase.GetSearchHistoryUseCase
+import com.example.playlistmaker.settings.data.ExternalNavigatorImpl
+import com.example.playlistmaker.settings.domain.ExternalNavigator
 
 object Creator {
     private fun getTrackRepository(): TrackRepository {
@@ -38,8 +38,8 @@ object Creator {
         return SearchHistoryRepositoryImpl(provideSharedPreferencesStorage("search_history", context))
     }
 
-    private fun provideSettingsRepository(context: Context): SettingsRepository {
-        return SettingsRepositoryImpl(provideSharedPreferencesStorage("theme_pref", context))
+    fun provideSettingsRepository(context: Context): SettingsRepository {
+        return SettingsRepositoryImpl(context, provideSharedPreferencesStorage("theme_pref", context))
     }
 
     fun provideTrackInteractor(): TrackInteractor {
@@ -58,11 +58,6 @@ object Creator {
         return ClearSearchHistoryUseCase(provideSearchHistoryRepository(context))
     }
 
-    fun provideGetThemeSwitcherUseCase(context: Context): GetThemeSwitcherUseCase {
-        return GetThemeSwitcherUseCase(provideSettingsRepository(context))
-    }
+    fun externalNavigator(context: Context): ExternalNavigator = ExternalNavigatorImpl(context)
 
-    fun provideSetThemeSwitcherUseCase(context: Context): SetThemeSwitcherUseCase {
-        return SetThemeSwitcherUseCase(provideSettingsRepository(context))
-    }
-}
+ }
