@@ -6,25 +6,35 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.playlistmaker.creator.Creator
-import com.example.playlistmaker.settings.domain.api.SettingsRepository
+import com.example.playlistmaker.settings.domain.SettingsInteractor
+import com.example.playlistmaker.settings.domain.impl.SettingsInteractorImpl
 import com.example.playlistmaker.sharing.data.SharingInteractorImpl
 import com.example.playlistmaker.sharing.domain.SharingInteractor
 
 class SettingsViewModel(
     private val sharingInteractor: SharingInteractor,
-    private val settingsRepository: SettingsRepository
+    private val settingsInteractor: SettingsInteractor
 ) : ViewModel() {
 
     private val _darkTheme = MutableLiveData<Boolean>()
     val darkTheme: LiveData<Boolean> = _darkTheme
 
     init {
-        _darkTheme.value = settingsRepository.getThemeValue()
+        getThemeValue()
     }
 
-    fun switchTheme(darkThemeEnabled: Boolean) {
-        settingsRepository.setThemeValue(darkThemeEnabled)
+    fun getThemeValue() {
+        _darkTheme.value = settingsInteractor.getThemeValue()
     }
+
+    fun switchTheme(darkThemeValue: Boolean) {
+        settingsInteractor.setThemeValue(darkThemeValue)
+    }
+
+    fun applyTheme(darkThemeValue: Boolean) {
+        settingsInteractor.applyTheme(darkThemeValue)
+    }
+
 
     fun shareApp() {
         sharingInteractor.shareApp()
@@ -42,12 +52,12 @@ class SettingsViewModel(
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val settingsRepository = Creator.provideSettingsRepository(context)
             val sharingInteractor = SharingInteractorImpl(
-            externalNavigator = Creator.externalNavigator(context),
-            settingsRepository = settingsRepository
+                externalNavigator = Creator.externalNavigator(context),
+                settingsRepository = settingsRepository
             )
             return SettingsViewModel(
                 sharingInteractor = sharingInteractor,
-                settingsRepository = settingsRepository
+                settingsInteractor = SettingsInteractorImpl(settingsRepository)
             ) as T
         }
     }

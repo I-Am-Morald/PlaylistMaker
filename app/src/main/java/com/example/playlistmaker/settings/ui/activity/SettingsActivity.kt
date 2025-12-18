@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -18,11 +19,12 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
 
+    private var switcherValue = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         setupEdgeToEdge()
 
         with(binding) {
@@ -44,11 +46,13 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         viewModel.darkTheme.observe(this) { isDark ->
-            binding.themesSwitcher.isChecked = isDark
+            if (binding.themesSwitcher.isChecked != isDark) {
+                binding.themesSwitcher.isChecked = isDark
+            }
         }
 
-        binding.themesSwitcher.setOnCheckedChangeListener { _, checked ->
-            viewModel.switchTheme(checked)
+        binding.themesSwitcher.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.switchTheme(isChecked)
         }
     }
 
@@ -62,8 +66,8 @@ class SettingsActivity : AppCompatActivity() {
                 top = statusBarInsets.top,
                 bottom = navigationBarInsets.bottom
             )
-
             insets
         }
     }
+
 }

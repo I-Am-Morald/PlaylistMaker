@@ -17,6 +17,8 @@ import com.example.playlistmaker.search.domain.usecase.ClearSearchHistoryUseCase
 import com.example.playlistmaker.search.domain.usecase.GetSearchHistoryUseCase
 import com.example.playlistmaker.settings.data.ExternalNavigatorImpl
 import com.example.playlistmaker.settings.domain.ExternalNavigator
+import com.example.playlistmaker.settings.domain.SettingsInteractor
+import com.example.playlistmaker.settings.domain.impl.SettingsInteractorImpl
 
 object Creator {
     private fun getTrackRepository(): TrackRepository {
@@ -58,6 +60,12 @@ object Creator {
         return ClearSearchHistoryUseCase(provideSearchHistoryRepository(context))
     }
 
-    fun externalNavigator(context: Context): ExternalNavigator = ExternalNavigatorImpl(context)
+    fun externalNavigator(context: Context): ExternalNavigator {
+        return ExternalNavigatorImpl(context)
+    }
+
+    fun provideSettingsInteractor(context: Context) : SettingsInteractor {
+        return SettingsInteractorImpl(settingsRepository = provideSettingsRepository(context))
+    }
 
  }

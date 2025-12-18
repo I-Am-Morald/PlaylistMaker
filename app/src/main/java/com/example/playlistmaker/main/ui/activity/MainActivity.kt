@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
 
         setupEdgeToEdge()
 
+        viewModel.getThemeValue()
+
         observeTheme()
 
         //клик на поиск
@@ -84,4 +86,5 @@ class MainActivity : AppCompatActivity() {
             else AppCompatDelegate.MODE_NIGHT_NO
         )
     }
+
 }
