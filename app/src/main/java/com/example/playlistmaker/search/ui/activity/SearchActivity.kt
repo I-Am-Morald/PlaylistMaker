@@ -23,12 +23,6 @@ import com.example.playlistmaker.search.ui.view_model.SearchViewModel
 
 class SearchActivity : AppCompatActivity() {
 
-    companion object {
-        const val PRODUCT_AMOUNT = "PRODUCT_AMOUNT"
-        private const val CLICK_DEBOUNCE_DELAY = 1000L
-        private const val SEARCH_DEBOUNCE_DELAY = 2000L
-    }
-
     private val viewModel: SearchViewModel by viewModels {
         SearchViewModel.factory(this)
     }
@@ -259,5 +253,11 @@ class SearchActivity : AppCompatActivity() {
 
             insets
         }
+    }
+
+    companion object {
+        const val PRODUCT_AMOUNT = "PRODUCT_AMOUNT"
+        private const val CLICK_DEBOUNCE_DELAY = 1000L
+        private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
 }

@@ -1,6 +1,5 @@
 package com.example.playlistmaker.media_player.activity
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -21,7 +20,6 @@ import java.util.Locale
 class MediaPlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMediaplayerBinding
-    private var previewUrl: String? = ""
 
     private val viewModel: MediaPlayerViewModel by viewModels<MediaPlayerViewModel>()
 
@@ -42,7 +40,7 @@ class MediaPlayerActivity : AppCompatActivity() {
             finish()
         }
 
-        viewModel.preparePlayer(previewUrl)
+        viewModel.preparePlayer()
 
         binding.playButton.setOnClickListener {
             viewModel.playbackControl()
@@ -57,7 +55,7 @@ class MediaPlayerActivity : AppCompatActivity() {
             is MediaPlayerState.Timer -> binding.currentDuration.text = state.data
             is MediaPlayerState.Complete -> {
                 binding.playButton.setImageResource(R.drawable.ic_play_button_100)
-                binding.currentDuration.text = "00:00"
+                binding.currentDuration.text = getString(R.string.default_value)
             }
 
         }
@@ -65,11 +63,7 @@ class MediaPlayerActivity : AppCompatActivity() {
 
     private fun getTrackFromIntent() {
         @Suppress("DEPRECATION")
-        val track = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra("track", Track::class.java)
-        } else {
-            intent.getSerializableExtra("track") as? Track
-        }
+        val track = intent.getParcelableExtra<Track>("track")
 
         track?.let {
             binding.mediaTrackName.text = it.trackName
@@ -79,7 +73,7 @@ class MediaPlayerActivity : AppCompatActivity() {
             binding.durationValue.text = trackTime
 
             val artworkUrl = it.getCoverArtwork()
-            previewUrl = it.previewUrl
+            viewModel.setPreviewUrl(it.previewUrl)
 
             Glide.with(this)
                 .load(artworkUrl)

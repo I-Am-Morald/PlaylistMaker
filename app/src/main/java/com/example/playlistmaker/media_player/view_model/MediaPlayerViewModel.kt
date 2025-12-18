@@ -15,6 +15,7 @@ class MediaPlayerViewModel : ViewModel() {
     private val progressHandler = Handler(Looper.getMainLooper())
     private var mediaPlayer = MediaPlayer()
     private var playerState = PlayerState.DEFAULT
+    private var previewUrl: String? = ""
 
     private val state = MutableLiveData<MediaPlayerState>()
     fun getState(): LiveData<MediaPlayerState> = state
@@ -41,7 +42,10 @@ class MediaPlayerViewModel : ViewModel() {
         progressHandler.removeCallbacksAndMessages(null)
     }
 
-    fun preparePlayer(previewUrl: String?) {
+    fun setPreviewUrl(url: String?) {
+        previewUrl = url ?: ""
+    }
+    fun preparePlayer() {
         if (previewUrl.isNullOrEmpty()) {
             return
         }

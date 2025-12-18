@@ -1,8 +1,6 @@
 package com.example.playlistmaker.settings.data.repository
 
-import android.app.Activity
 import android.content.Context
-import androidx.appcompat.app.AppCompatDelegate
 import com.example.playlistmaker.R
 import com.example.playlistmaker.settings.data.storage.SharedPreferencesStorage
 import com.example.playlistmaker.settings.domain.api.SettingsRepository
@@ -16,18 +14,7 @@ class SettingsRepositoryImpl(private val context: Context, private val sharedPre
     }
 
     override fun setThemeValue(isDarkTheme: Boolean) {
-        val lastValue = getThemeValue()
-        if (isDarkTheme != lastValue) {
             sharedPreferencesStorage.setBoolean(DARK_THEME_KEY, isDarkTheme)
-            AppCompatDelegate.setDefaultNightMode(
-                if (isDarkTheme) {
-                    AppCompatDelegate.MODE_NIGHT_YES
-                } else {
-                    AppCompatDelegate.MODE_NIGHT_NO
-                }
-            )
-        }
-
     }
 
     override fun getShareAppLink(): String {
