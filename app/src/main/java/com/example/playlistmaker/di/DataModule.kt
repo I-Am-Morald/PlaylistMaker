@@ -16,7 +16,7 @@ val dataModule = module {
         SharedPreferencesStorage(get(), get())
     }
 
-    single {
+    factory {
         MediaPlayer()
     }
 }
