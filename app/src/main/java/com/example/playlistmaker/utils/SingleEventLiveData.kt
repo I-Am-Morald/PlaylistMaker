@@ -1,4 +1,4 @@
-package com.example.vehicle_shop_mvvm.presentation.utils
+package com.example.playlistmaker.utils
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
