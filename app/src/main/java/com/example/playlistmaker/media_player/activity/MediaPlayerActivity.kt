@@ -2,6 +2,7 @@ package com.example.playlistmaker.media_player.activity
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -13,7 +14,6 @@ import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.ActivityMediaplayerBinding
 import com.example.playlistmaker.media_player.view_model.MediaPlayerViewModel
 import com.example.playlistmaker.search.domain.models.Track
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -21,7 +21,7 @@ class MediaPlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMediaplayerBinding
 
-    private val viewModel by viewModel<MediaPlayerViewModel>()
+    private val viewModel: MediaPlayerViewModel by viewModels<MediaPlayerViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

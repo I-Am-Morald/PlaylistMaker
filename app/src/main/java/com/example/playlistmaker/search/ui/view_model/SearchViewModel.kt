@@ -11,17 +11,16 @@ import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.search.domain.api.TrackInteractor
 import com.example.playlistmaker.search.domain.models.ResponseStatus
 import com.example.playlistmaker.search.domain.models.Track
-import com.example.playlistmaker.search.domain.usecase.AddTrackToSearchHistoryUseCase
-import com.example.playlistmaker.search.domain.usecase.ClearSearchHistoryUseCase
-import com.example.playlistmaker.search.domain.usecase.GetSearchHistoryUseCase
 import com.example.playlistmaker.search.ui.activity.SearchState
 
 class SearchViewModel(
-    private val trackInteractor: TrackInteractor,
-    private val getSearchHistoryUseCase: GetSearchHistoryUseCase,
-    private val addTrackToSearchHistoryUseCase: AddTrackToSearchHistoryUseCase,
-    private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase
+    context: Context
 ) : ViewModel() {
+
+    val clearSearchHistoryUseCase = Creator.provideClearSearchHistoryUseCase(context)
+    val getSearchHistoryUseCase = Creator.provideGetSearchHistoryUseCase(context)
+    val addTrackToSearchHistoryUseCase = Creator.provideAddTrackToSearchHistoryUseCase(context)
+    private val trackInteractor = Creator.provideTrackInteractor()
 
     private val state = MutableLiveData<SearchState>()
     fun getState(): LiveData<SearchState> = state
@@ -72,4 +71,13 @@ class SearchViewModel(
             })
     }
 
+    companion object {
+        fun factory(context: Context): ViewModelProvider.Factory {
+            return viewModelFactory {
+                initializer {
+                    SearchViewModel(context)
+                }
+            }
+        }
+    }
 }
