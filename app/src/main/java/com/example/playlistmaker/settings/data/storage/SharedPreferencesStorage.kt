@@ -1,11 +1,14 @@
 package com.example.playlistmaker.settings.data.storage
 
-import android.content.SharedPreferences
+import android.content.Context
 import com.example.playlistmaker.search.domain.models.Track
 import com.google.gson.Gson
 
-class SharedPreferencesStorage(val sharedPreferences: SharedPreferences) {
-    private val gson = Gson()
+class SharedPreferencesStorage(
+    val context: Context,
+    private val gson: Gson
+) {
+    val sharedPreferences = context.getSharedPreferences(APP_SHARED_KEY, Context.MODE_PRIVATE)
 
     fun <T> getList(key: String): MutableList<T> {
         val json = sharedPreferences.getString(key, null)
@@ -37,5 +40,9 @@ class SharedPreferencesStorage(val sharedPreferences: SharedPreferences) {
         sharedPreferences.edit()
             .putBoolean(key, value)
             .apply()
+    }
+
+    companion object {
+        private const val APP_SHARED_KEY = "app_prefs"
     }
 }

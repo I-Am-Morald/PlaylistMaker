@@ -9,14 +9,22 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.example.playlistmaker.databinding.ActivityMainBinding
 import com.example.playlistmaker.library.ui.activity.LibraryActivity
+import com.example.playlistmaker.main.ui.view_model.MainViewModel
 import com.example.playlistmaker.search.ui.activity.SearchActivity
 import com.example.playlistmaker.settings.ui.activity.SettingsActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.getValue
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    private val viewModel: MainViewModel by viewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        viewModel.setThemeOnStart()
+
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

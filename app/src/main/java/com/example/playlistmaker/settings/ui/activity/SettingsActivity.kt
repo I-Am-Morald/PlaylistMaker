@@ -2,19 +2,17 @@ package com.example.playlistmaker.settings.ui.activity
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.example.playlistmaker.databinding.ActivitySettingsBinding
 import com.example.playlistmaker.settings.ui.view_model.SettingsViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SettingsActivity : AppCompatActivity() {
 
-    private val viewModel: SettingsViewModel by viewModels {
-        SettingsViewModel.Factory(this)
-    }
+    private val viewModel: SettingsViewModel by viewModel()
 
     private lateinit var binding: ActivitySettingsBinding
 
