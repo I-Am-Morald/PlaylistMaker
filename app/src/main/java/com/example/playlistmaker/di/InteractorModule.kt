@@ -14,11 +14,11 @@ import com.example.playlistmaker.sharing.domain.SharingInteractor
 import org.koin.dsl.module
 
 val interactorModule = module {
-    single<TrackInteractor> {
+    factory<TrackInteractor> {
         TrackInteractorImpl(get())
     }
 
-    single<SettingsInteractor> {
+    factory<SettingsInteractor> {
         SettingsInteractorImpl(get())
     }
 
@@ -34,11 +34,11 @@ val interactorModule = module {
         ClearSearchHistoryUseCase(get())
     }
 
-    single<SharingInteractor> {
+    factory<SharingInteractor> {
         SharingInteractorImpl(get(), get())
     }
 
-    single<ExternalNavigator> {
+    factory<ExternalNavigator> {
         ExternalNavigatorImpl(get())
     }
 }

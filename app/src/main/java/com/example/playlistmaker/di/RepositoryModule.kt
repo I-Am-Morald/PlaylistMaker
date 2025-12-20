@@ -10,15 +10,15 @@ import com.example.playlistmaker.settings.domain.api.SettingsRepository
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    single<SearchHistoryRepository> {
+    factory<SearchHistoryRepository> {
         SearchHistoryRepositoryImpl(get())
     }
 
-    single<SettingsRepository> {
+    factory<SettingsRepository> {
         SettingsRepositoryImpl(get(), get())
     }
 
-    single<TrackRepository>{
+    factory<TrackRepository>{
         TrackRepositoryImpl(RetrofitNetworkClient())
     }
 

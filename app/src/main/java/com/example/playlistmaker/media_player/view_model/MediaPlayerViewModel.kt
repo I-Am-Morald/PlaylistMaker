@@ -10,10 +10,9 @@ import com.example.playlistmaker.media_player.activity.MediaPlayerState
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MediaPlayerViewModel : ViewModel() {
+class MediaPlayerViewModel(private val mediaPlayer: MediaPlayer) : ViewModel() {
 
     private val progressHandler = Handler(Looper.getMainLooper())
-    private var mediaPlayer = MediaPlayer()
     private var playerState = PlayerState.DEFAULT
     private var previewUrl: String? = ""
 
