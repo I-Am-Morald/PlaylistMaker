@@ -9,7 +9,7 @@ import com.example.playlistmaker.search.domain.models.Track
 import com.example.playlistmaker.search.domain.usecase.AddTrackToSearchHistoryUseCase
 import com.example.playlistmaker.search.domain.usecase.ClearSearchHistoryUseCase
 import com.example.playlistmaker.search.domain.usecase.GetSearchHistoryUseCase
-import com.example.playlistmaker.search.ui.activity.SearchState
+import com.example.playlistmaker.search.ui.fragment.SearchState
 
 class SearchViewModel(
     private val trackInteractor: TrackInteractor,
