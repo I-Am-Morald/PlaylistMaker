@@ -235,6 +235,7 @@ class SearchFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        handler.removeCallbacks(searchRunnable)
         _binding = null
     }
 }
