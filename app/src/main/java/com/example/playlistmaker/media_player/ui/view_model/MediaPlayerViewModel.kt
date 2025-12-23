@@ -1,4 +1,4 @@
-package com.example.playlistmaker.media_player.view_model
+package com.example.playlistmaker.media_player.ui.view_model
 
 import android.media.MediaPlayer
 import android.os.Handler
@@ -6,7 +6,7 @@ import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.playlistmaker.media_player.activity.MediaPlayerState
+import com.example.playlistmaker.media_player.ui.fragment.MediaPlayerState
 import java.text.SimpleDateFormat
 import java.util.Locale
 

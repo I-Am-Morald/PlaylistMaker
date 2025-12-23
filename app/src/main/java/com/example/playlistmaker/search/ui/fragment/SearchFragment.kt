@@ -1,29 +1,31 @@
-package com.example.playlistmaker.search.ui.activity
+package com.example.playlistmaker.search.ui.fragment
 
-import android.content.Intent
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.playlistmaker.R
-import com.example.playlistmaker.databinding.ActivitySearchBinding
+import com.example.playlistmaker.databinding.FragmentSearchBinding
 import com.example.playlistmaker.search.domain.models.Track
-import com.example.playlistmaker.media_player.activity.MediaPlayerActivity
 import com.example.playlistmaker.search.ui.view_model.SearchViewModel
-
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.getValue
+import kotlin.toString
 
-class SearchActivity : AppCompatActivity() {
+class SearchFragment : Fragment() {
+
+    private var _binding: FragmentSearchBinding? = null
+    private val binding get() = _binding!!
 
     private val viewModel: SearchViewModel by viewModel()
 
@@ -34,28 +36,31 @@ class SearchActivity : AppCompatActivity() {
 
     private lateinit var tracksAdapter: TracksAdapter
     private lateinit var historyAdapter: TracksAdapter
-    private lateinit var binding: ActivitySearchBinding
 
     private var historyList: MutableList<Track> = mutableListOf()
     private var tracksList: MutableList<Track> = mutableListOf()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivitySearchBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSearchBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        setupEdgeToEdge()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        viewModel.getState().observe(this) { state ->
+        viewModel.getState().observe(viewLifecycleOwner) { state ->
             render(state)
         }
 
         val onTrackClick: (Track) -> Unit = { track ->
             if (clickDebounce()) {
                 viewModel.addTrackToHistory(track)
-                val intent = Intent(this, MediaPlayerActivity::class.java)
-                intent.putExtra("track", track)
-                startActivity(intent)
+                val action = SearchFragmentDirections.actionSearchFragmentToMediaPlayerFragment(track)
+                findNavController().navigate(action)
             }
         }
 
@@ -109,10 +114,6 @@ class SearchActivity : AppCompatActivity() {
             false
         }
 
-        binding.backButton.setOnClickListener {
-            finish()
-        }
-
         binding.clearIcon.setOnClickListener {
             binding.searchEditText.setText("")
             hideKeyboard()
@@ -126,6 +127,7 @@ class SearchActivity : AppCompatActivity() {
 
         binding.clearHistory.setOnClickListener {
             viewModel.clearHistory()
+            historyList.clear()
             showHistory(false)
         }
 
@@ -134,7 +136,6 @@ class SearchActivity : AppCompatActivity() {
         }
 
     }
-
     private fun render(state: SearchState) {
         when (state) {
             is SearchState.Loading -> showLoading()
@@ -163,19 +164,6 @@ class SearchActivity : AppCompatActivity() {
                 showResult()
             }
         }
-    }
-
-    private var searchValue: String = ""
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(PRODUCT_AMOUNT, searchValue)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        searchValue = savedInstanceState.getString(PRODUCT_AMOUNT, "")
-        binding.searchEditText.setText(searchValue)
     }
 
     fun searchQuery() {
@@ -236,28 +224,17 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun hideKeyboard() {
-        val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager
+        val inputMethodManager = requireContext().getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager
         inputMethodManager?.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
     }
 
-    private fun setupEdgeToEdge() {
-        enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { view, insets ->
-            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            val navigationBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-
-            view.updatePadding(
-                top = statusBarInsets.top,
-                bottom = navigationBarInsets.bottom
-            )
-
-            insets
-        }
-    }
-
     companion object {
-        const val PRODUCT_AMOUNT = "PRODUCT_AMOUNT"
         private const val CLICK_DEBOUNCE_DELAY = 1000L
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

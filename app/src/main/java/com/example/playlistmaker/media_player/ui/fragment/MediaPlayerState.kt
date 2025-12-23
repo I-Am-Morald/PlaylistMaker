@@ -1,4 +1,4 @@
-package com.example.playlistmaker.media_player.activity
+package com.example.playlistmaker.media_player.ui.fragment
 
 sealed interface MediaPlayerState {
     object Playing : MediaPlayerState
