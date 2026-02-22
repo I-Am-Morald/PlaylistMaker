@@ -1,4 +1,4 @@
-package com.example.playlistmaker.library.ui.activity
+package com.example.playlistmaker.library.ui.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +11,8 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class LikedFragment : Fragment() {
 
-    private lateinit var binding: FragmentLikedBinding
+    private var _binding: FragmentLikedBinding? = null
+    private val binding get() = _binding!!
 
     private val viewModel by viewModel<LikedViewModel>()
 
@@ -20,7 +21,7 @@ class LikedFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentLikedBinding.inflate(inflater, container, false)
+        _binding = FragmentLikedBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -30,5 +31,10 @@ class LikedFragment : Fragment() {
 
     companion object {
         fun newInstance() = LikedFragment()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
     id("kotlin-parcelize")
+    id ("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -58,4 +59,8 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.koin.android)
+    implementation(libs.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.fragment.ktx)
+
 }

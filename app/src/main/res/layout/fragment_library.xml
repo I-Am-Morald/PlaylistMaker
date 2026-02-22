@@ -7,19 +7,13 @@
     android:layout_height="match_parent"
     android:background="?attr/colorPrimary"
     android:orientation="vertical"
-    tools:context=".library.ui.activity.LibraryActivity">
+    tools:context=".library.ui.fragment.LibraryFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:orientation="horizontal"
         android:padding="4dp">
-
-        <ImageView
-            android:id="@+id/back_button"
-            style="@style/BackIconImageStyle"
-            android:layout_marginStart="12dp"
-            android:src="@drawable/ic_arrow_back_24" />
 
         <TextView
             style="@style/TitleActivityTextStyle"
