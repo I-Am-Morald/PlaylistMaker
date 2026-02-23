@@ -1,44 +1,38 @@
 package com.example.playlistmaker.media_player.ui.view_model
 
 import android.media.MediaPlayer
-import android.os.Handler
-import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.playlistmaker.media_player.ui.fragment.MediaPlayerState
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MediaPlayerViewModel(private val mediaPlayer: MediaPlayer) : ViewModel() {
 
-    private val progressHandler = Handler(Looper.getMainLooper())
     private var playerState = PlayerState.DEFAULT
     private var previewUrl: String? = ""
+
+    private var timerJob: Job? = null
 
     private val state = MutableLiveData<MediaPlayerState>()
     fun getState(): LiveData<MediaPlayerState> = state
 
-    private fun progressTask() {
-        if (playerState == PlayerState.PLAYING) {
-            val currentDuration =
-                SimpleDateFormat("mm:ss", Locale.getDefault()).format(mediaPlayer.currentPosition)
-            val timerState = MediaPlayerState.Timer(data = currentDuration)
-            state.postValue(timerState)
+    private fun startTimer() {
+        timerJob = viewModelScope.launch {
+            while (playerState == PlayerState.PLAYING) {
+                delay(UPDATE_INTERVAL)
+                state.postValue(MediaPlayerState.Timer(data = getCurrentPlayerPosition()))
+            }
         }
     }
 
-    fun startProgressTask() {
-        progressHandler.post(object : Runnable {
-            override fun run() {
-                progressTask()
-                progressHandler.postDelayed(this, UPDATE_INTERVAL)
-            }
-        })
-    }
-
-    fun stopProgressTask() {
-        progressHandler.removeCallbacksAndMessages(null)
+    private fun getCurrentPlayerPosition(): String {
+        return SimpleDateFormat("mm:ss", Locale.getDefault()).format(mediaPlayer.currentPosition) ?: "00:00"
     }
 
     fun setPreviewUrl(url: String?) {
@@ -55,8 +49,10 @@ class MediaPlayerViewModel(private val mediaPlayer: MediaPlayer) : ViewModel() {
             state.value = MediaPlayerState.Prepared
         }
         mediaPlayer.setOnCompletionListener {
+            timerJob?.cancel()
             playerState = PlayerState.PREPARED
             state.value = MediaPlayerState.Complete
+            state.value = MediaPlayerState.Timer (data = DEFAULT_DURATION)
         }
     }
 
@@ -78,14 +74,14 @@ class MediaPlayerViewModel(private val mediaPlayer: MediaPlayer) : ViewModel() {
         mediaPlayer.start()
         playerState = PlayerState.PLAYING
         state.value = MediaPlayerState.Playing
-        startProgressTask()
+        startTimer()
     }
 
     private fun pausePlayer() {
         mediaPlayer.pause()
         playerState = PlayerState.PAUSED
         state.value = MediaPlayerState.Paused
-        stopProgressTask()
+        timerJob?.cancel()
     }
 
     fun mediaPlayerOnPaused() {
@@ -94,11 +90,11 @@ class MediaPlayerViewModel(private val mediaPlayer: MediaPlayer) : ViewModel() {
 
     fun mediaPlayerOnDestroy() {
         mediaPlayer.release()
-        stopProgressTask()
     }
 
     companion object {
-        private const val UPDATE_INTERVAL = 500L
+        private const val UPDATE_INTERVAL = 300L
+        private const val DEFAULT_DURATION = "00:00"
     }
 
     enum class PlayerState {
