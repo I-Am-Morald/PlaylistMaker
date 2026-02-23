@@ -125,6 +125,7 @@ class MediaPlayerFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.mediaPlayerOnDestroy()
         _binding = null
     }
 }

@@ -2,8 +2,6 @@ package com.example.playlistmaker.search.ui.fragment
 
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -20,7 +18,6 @@ import com.example.playlistmaker.search.domain.models.Track
 import com.example.playlistmaker.search.ui.view_model.SearchViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.getValue
-import kotlin.toString
 
 class SearchFragment : Fragment() {
 
@@ -28,11 +25,7 @@ class SearchFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: SearchViewModel by viewModel()
-
-    private var lastText = ""
     private var isClickAllowed = true
-    private val handler = Handler(Looper.getMainLooper())
-    private val searchRunnable = Runnable { searchQuery() }
 
     private lateinit var tracksAdapter: TracksAdapter
     private lateinit var historyAdapter: TracksAdapter
@@ -56,8 +49,11 @@ class SearchFragment : Fragment() {
             render(state)
         }
 
+        viewModel.isClickAllowed.observe(viewLifecycleOwner) { isClickAllowed = it}
+
         val onTrackClick: (Track) -> Unit = { track ->
-            if (clickDebounce()) {
+            if (isClickAllowed) {
+                viewModel.clickDebounce()
                 viewModel.addTrackToHistory(track)
                 val action = SearchFragmentDirections.actionSearchFragmentToMediaPlayerFragment(track)
                 findNavController().navigate(action)
@@ -84,15 +80,17 @@ class SearchFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                lastText = s.toString()
+                s?.let {
+                    viewModel.setSearchText(s.toString())
+                }
                 binding.clearIcon.isVisible = !s.isNullOrEmpty()
-                searchDebounce()
 
                 if (binding.searchEditText.hasFocus() && s?.isEmpty() == true) {
                     if (historyList.isNotEmpty()) {
                         showHistory(true)
                     }
                 } else {
+                    viewModel.searchDebounce()
                     binding.recyclerView.adapter = tracksAdapter
                     binding.historyTitle.isVisible = false
                     binding.clearHistory.isVisible = false
@@ -116,6 +114,7 @@ class SearchFragment : Fragment() {
 
         binding.clearIcon.setOnClickListener {
             binding.searchEditText.setText("")
+            viewModel.clearSearchQuery()
             hideKeyboard()
             tracksList.clear()
             binding.noticeLayout.isVisible = false
@@ -209,33 +208,14 @@ class SearchFragment : Fragment() {
         binding.noticeText.setText(R.string.connection_error)
     }
 
-    private fun clickDebounce(): Boolean {
-        val current = isClickAllowed
-        if (isClickAllowed) {
-            isClickAllowed = false
-            handler.postDelayed({ isClickAllowed = true }, CLICK_DEBOUNCE_DELAY)
-        }
-        return current
-    }
-
-    private fun searchDebounce() {
-        handler.removeCallbacks(searchRunnable)
-        handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
-    }
-
     private fun hideKeyboard() {
         val inputMethodManager = requireContext().getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager
         inputMethodManager?.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
     }
 
-    companion object {
-        private const val CLICK_DEBOUNCE_DELAY = 1000L
-        private const val SEARCH_DEBOUNCE_DELAY = 2000L
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        handler.removeCallbacks(searchRunnable)
         _binding = null
     }
+
 }
