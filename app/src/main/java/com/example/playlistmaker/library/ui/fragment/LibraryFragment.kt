@@ -27,9 +27,8 @@ class LibraryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = LibraryViewPagerAdapter(requireActivity())
+        val adapter = LibraryViewPagerAdapter(childFragmentManager, lifecycle)
         binding.viewPager.adapter = adapter
-
         tabMediator = TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             when (position) {
                 0 -> tab.text = getString(R.string.liked_tracks)

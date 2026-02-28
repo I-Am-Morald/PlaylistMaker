@@ -1,6 +1,5 @@
 package com.example.playlistmaker.library.ui.view_model
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,7 +8,6 @@ import com.example.playlistmaker.db.domain.FavoritesInteractor
 import com.example.playlistmaker.library.ui.fragment.FavoriteState
 import com.example.playlistmaker.search.domain.models.Track
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 
 class LikedViewModel(private val favoritesInteractor: FavoritesInteractor) : ViewModel() {
@@ -21,15 +19,9 @@ class LikedViewModel(private val favoritesInteractor: FavoritesInteractor) : Vie
     val isClickAllowed: LiveData<Boolean>
         get() = _isClickAllowed
 
-/*    init {
-        loadFavorites()
-    }*/
-
     fun loadFavorites() {
-        Log.d("LikedViewModel", "loadFavorites called")
         viewModelScope.launch {
             favoritesInteractor.favoriteTrackList().collect { favoriteList ->
-                Log.d("LikedViewModel", "Flow emitted: ${favoriteList.size} items")
                 updateFavoriteState(favoriteList)
             }
         }

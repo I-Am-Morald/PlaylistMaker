@@ -1,7 +1,6 @@
 package com.example.playlistmaker.library.ui.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,8 +38,6 @@ class LikedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        Log.d("LikedFragment", "onViewCreated called")
-
         val onTrackClick: (Track) -> Unit = { track ->
             if (isClickAllowed) {
                 viewModel.clickDebounce()
@@ -55,8 +52,6 @@ class LikedFragment : Fragment() {
         binding.favoriteRecyclerView.adapter = favoritesAdapter
 
         viewModel.getFavorite().observe(viewLifecycleOwner) { state ->
-
-            Log.d("LikedFragment", "LiveData updated")
             render(state)
         }
 
