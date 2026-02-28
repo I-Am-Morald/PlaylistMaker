@@ -102,7 +102,7 @@
         android:id="@+id/like_button"
         android:layout_width="51dp"
         android:layout_height="51dp"
-        android:src="@drawable/ic_like_button_51"
+        android:src="@drawable/ic_like_button_on_51"
         app:layout_constraintBottom_toBottomOf="@id/play_button"
         app:layout_constraintEnd_toStartOf="@id/rightBorder"
         app:layout_constraintTop_toTopOf="@id/play_button" />

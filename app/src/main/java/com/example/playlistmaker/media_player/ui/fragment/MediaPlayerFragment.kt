@@ -50,11 +50,15 @@ class MediaPlayerFragment : Fragment() {
 
         playedTrack = args.track
 
-        viewModel.getState().observe(viewLifecycleOwner) { state ->
-            render(state)
+        viewModel.getMediaState().observe(viewLifecycleOwner) { mediaState ->
+            render(mediaState)
         }
 
         getTrackFromArguments()
+
+        viewModel.isFavorite.observe(viewLifecycleOwner) { isFavorite ->
+            showIsFavorite(isFavorite)
+        }
 
         viewModel.preparePlayer()
 
@@ -65,14 +69,18 @@ class MediaPlayerFragment : Fragment() {
         binding.backButton.setOnClickListener {
             findNavController().popBackStack() //navigateUp()
         }
+
+        binding.likeButton.setOnClickListener {
+            viewModel.onFavoriteClicked(playedTrack)
+        }
     }
 
-    private fun render(state: MediaPlayerState) {
-        when (state) {
+    private fun render(mediaState: MediaPlayerState) {
+        when (mediaState) {
             is MediaPlayerState.Prepared -> binding.playButton.isEnabled = true
             is MediaPlayerState.Playing -> binding.playButton.setImageResource(R.drawable.ic_pause_button_100)
             is MediaPlayerState.Paused -> binding.playButton.setImageResource(R.drawable.ic_play_button_100)
-            is MediaPlayerState.Timer -> binding.currentDuration.text = state.data
+            is MediaPlayerState.Timer -> binding.currentDuration.text = mediaState.data
             is MediaPlayerState.Complete -> {
                 binding.playButton.setImageResource(R.drawable.ic_play_button_100)
                 binding.currentDuration.text = getString(R.string.default_value)
@@ -83,41 +91,53 @@ class MediaPlayerFragment : Fragment() {
 
     private fun getTrackFromArguments() {
 
-            binding.mediaTrackName.text = playedTrack.trackName
-            binding.mediaArtistName.text = playedTrack.artistName
-            val trackTime =
-                SimpleDateFormat("mm:ss", Locale.getDefault()).format(playedTrack.trackTimeMillis.toLong())
-            binding.durationValue.text = trackTime
+        binding.mediaTrackName.text = playedTrack.trackName
+        binding.mediaArtistName.text = playedTrack.artistName
+        val trackTime =
+            SimpleDateFormat(
+                "mm:ss",
+                Locale.getDefault()
+            ).format(playedTrack.trackTimeMillis.toLong())
+        binding.durationValue.text = trackTime
 
-            val artworkUrl = playedTrack.getCoverArtwork()
-            viewModel.setPreviewUrl(playedTrack.previewUrl)
+        val artworkUrl = playedTrack.getCoverArtwork()
+        viewModel.setPreviewUrl(playedTrack.previewUrl)
 
-            Glide.with(this)
-                .load(artworkUrl)
-                .placeholder(R.drawable.ic_placeholder_312)
-                .transform(RoundedCorners(resources.getDimensionPixelSize(R.dimen.album_cover_corner)))
-                .error(R.drawable.ic_placeholder_312)
-                .into(binding.trackCover)
+        Glide.with(this)
+            .load(artworkUrl)
+            .placeholder(R.drawable.ic_placeholder_312)
+            .transform(RoundedCorners(resources.getDimensionPixelSize(R.dimen.album_cover_corner)))
+            .error(R.drawable.ic_placeholder_312)
+            .into(binding.trackCover)
 
-            if (!playedTrack.collectionName.isNullOrEmpty()) {
-                binding.albumValue.text = playedTrack.collectionName
-                binding.albumContainer.isVisible = true
-            } else {
-                binding.albumContainer.isVisible = false
-            }
+        if (!playedTrack.collectionName.isNullOrEmpty()) {
+            binding.albumValue.text = playedTrack.collectionName
+            binding.albumContainer.isVisible = true
+        } else {
+            binding.albumContainer.isVisible = false
+        }
 
-            val releaseYear = playedTrack.getFormattedDate()
-            if (!releaseYear.isNullOrEmpty()) {
-                binding.yearValue.text = releaseYear
-                binding.yearContainer.isVisible = true
-            } else {
-                binding.yearContainer.isVisible = false
-            }
+        val releaseYear = playedTrack.getFormattedDate()
+        if (!releaseYear.isNullOrEmpty()) {
+            binding.yearValue.text = releaseYear
+            binding.yearContainer.isVisible = true
+        } else {
+            binding.yearContainer.isVisible = false
+        }
 
-            binding.genreValue.text = playedTrack.primaryGenreName ?: getString(R.string.unknown)
-            binding.countryValue.text = playedTrack.country ?: getString(R.string.unknown)
+        viewModel.setIsFavorite(playedTrack.trackId)
+
+        binding.genreValue.text = playedTrack.primaryGenreName ?: getString(R.string.unknown)
+        binding.countryValue.text = playedTrack.country ?: getString(R.string.unknown)
     }
 
+    fun showIsFavorite (isFavorite: Boolean) {
+        if (isFavorite) {
+            binding.likeButton.setImageResource(R.drawable.ic_like_button_on_51)
+        } else {
+            binding.likeButton.setImageResource(R.drawable.ic_like_button_off_51)
+        }
+    }
     override fun onPause() {
         viewModel.mediaPlayerOnPaused()
         super.onPause()
@@ -125,7 +145,7 @@ class MediaPlayerFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.mediaPlayerOnDestroy()
+        viewModel.releasePlayer()
         _binding = null
     }
 }

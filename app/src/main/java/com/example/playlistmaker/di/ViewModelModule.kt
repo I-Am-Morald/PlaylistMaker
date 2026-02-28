@@ -32,7 +32,7 @@ val viewModelModule = module {
     }
 
     viewModel {
-        MediaPlayerViewModel(get())
+        MediaPlayerViewModel(get(), get(), get())
     }
 
     viewModel {
@@ -40,7 +40,7 @@ val viewModelModule = module {
     }
 
     viewModel {
-        LikedViewModel()
+        LikedViewModel(get())
     }
 
 

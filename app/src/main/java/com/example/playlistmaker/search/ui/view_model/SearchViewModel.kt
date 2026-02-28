@@ -38,8 +38,10 @@ class SearchViewModel(
     }
 
     fun loadSearchHistory() {
+        viewModelScope.launch {
         val historyList = getSearchHistoryUseCase.execute()
         state.value = SearchState.SearchHistory(data = historyList)
+        }
     }
 
     fun clearHistory() {
@@ -52,10 +54,12 @@ class SearchViewModel(
     }
 
     fun addTrackToHistory(track: Track) {
+        viewModelScope.launch {
         val historyList = getSearchHistoryUseCase.execute()
         addTrackToSearchHistoryUseCase.execute(historyList, track)
         val historyListUpdated = getSearchHistoryUseCase.execute()
         state.value = SearchState.SearchHistoryUpdated(data = historyListUpdated)
+    }
     }
 
     fun setSearchText(text: String) {
