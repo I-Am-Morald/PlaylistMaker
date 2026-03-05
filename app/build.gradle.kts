@@ -4,6 +4,7 @@ plugins {
     id("kotlin-kapt")
     id("kotlin-parcelize")
     id ("androidx.navigation.safeargs.kotlin")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -64,4 +65,13 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.kotlinx.coroutines.android)
 
+    val room_version = "2.8.4"
+
+    implementation("androidx.room:room-runtime:${room_version}")
+
+    // Kotlin Symbol Processing (KSP)
+    ksp("androidx.room:room-compiler:$room_version")
+
+    // Kotlin Extensions для корутин
+    implementation("androidx.room:room-ktx:${room_version}")
 }

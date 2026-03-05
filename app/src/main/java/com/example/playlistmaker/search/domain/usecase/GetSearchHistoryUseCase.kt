@@ -6,7 +6,7 @@ import com.example.playlistmaker.search.domain.models.Track
 class GetSearchHistoryUseCase(
     private val searchHistoryRepository: SearchHistoryRepository
 ) {
-    fun execute(): MutableList<Track> {
+    suspend fun execute(): MutableList<Track> {
         return searchHistoryRepository.getSearchHistory()
     }
 }
