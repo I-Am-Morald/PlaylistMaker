@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/create_playlist"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorPrimary"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/new_playlist_title"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/back_button"
+            style="@style/BackIconImageStyle"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/ic_arrow_back_24" />
+
+        <TextView
+            style="@style/TitleActivityTextStyle"
+            android:layout_marginStart="12dp"
+            android:text="@string/new_playlist" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/coverBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="394dp" />
+
+    <ImageView
+        android:id="@+id/add_cover"
+        android:layout_width="312dp"
+        android:layout_height="312dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/cover_border"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_add_cover_100"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_playlist_title" />
+
+    <ImageView
+        android:id="@+id/cover"
+        android:layout_width="312dp"
+        android:layout_height="312dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginEnd="24dp"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_playlist_title" />
+
+    <EditText
+        android:id="@+id/playlist_name"
+        style="@style/PlaylistEditTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/edittext_border"
+        android:hint="@string/playlist_name"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:lines="1"
+        android:maxLength="25"
+        android:textColorHint="?attr/colorOnPrimary"
+        app:layout_constraintTop_toBottomOf="@+id/coverBottom" />
+
+    <EditText
+        android:id="@+id/playlist_description"
+        style="@style/PlaylistEditTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/edittext_border"
+        android:hint="@string/playlist_description"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:lines="1"
+        android:maxLength="25"
+        android:textColorHint="?attr/colorOnPrimary"
+        app:layout_constraintTop_toBottomOf="@+id/playlist_name" />
+
+    <Button
+        android:id="@+id/create_button"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="17dp"
+        android:layout_marginEnd="17dp"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="@color/YP_text_gray"
+        android:text="@string/playlist_create"
+        android:textColor="@color/white"
+        app:cornerRadius="8dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,7 +13,7 @@ class FavoritesRepositoryImpl(
 ) : FavoritesRepository {
 
     override suspend fun addFavoriteTrack(track: Track) {
-        appDatabase.trackDao().insertTrack(trackDbConvertor.map(track))
+        appDatabase.trackDao().insertTrack(trackDbConvertor.mapToEntity(track))
     }
 
     override suspend fun deleteFavoriteTrack(track: Track) {
@@ -26,7 +26,7 @@ class FavoritesRepositoryImpl(
     }
 
     private fun getReversedTrackEntity(tracks: List<TrackEntity>): List<Track> {
-        return tracks.map { tracks -> trackDbConvertor.map(tracks) }
+        return tracks.map { tracks -> trackDbConvertor.mapFromEntity(tracks) }
             .reversed()
     }
 

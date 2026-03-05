@@ -12,7 +12,7 @@ class TracksAdapter(
 ) : RecyclerView.Adapter<TracksViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TracksViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.tracks_list, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false)
         return TracksViewHolder(view)
     }
 
@@ -24,11 +24,6 @@ class TracksAdapter(
 
     override fun getItemCount(): Int {
         return tracks.size
-    }
-
-    fun updateTracks(data: MutableList<Track>) {
-        tracks = data
-        notifyDataSetChanged()
     }
 
 }
