@@ -15,11 +15,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.FragmentPlaylistCreateBinding
 import com.example.playlistmaker.library.ui.view_model.PlaylistCreateViewModel
@@ -56,10 +54,7 @@ class PlaylistCreateFragment : Fragment() {
                     Glide.with(this)
                         .load(uri)
                         .centerCrop()
-                        .transform(RoundedCorners(resources.getDimensionPixelSize(R.dimen.album_cover_corner)))
-                        .into(binding.cover)
-                    binding.addCover.isVisible = false
-                    binding.cover.isVisible = true
+                        .into(binding.addCover)
                 }
             }
 
@@ -96,7 +91,7 @@ class PlaylistCreateFragment : Fragment() {
 
         binding.playlistName.addTextChangedListener(playlistNameTextWatcher)
 
-        binding.addCover.setOnClickListener {
+        binding.addCoverContainer.setOnClickListener {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
@@ -143,7 +138,7 @@ class PlaylistCreateFragment : Fragment() {
     }
 
     private fun backPressed() {
-        if (binding.playlistName.text.isNotEmpty() || binding.playlistDescription.text.isNotEmpty() || binding.cover.drawable != null) {
+        if (binding.playlistName.text.isNotEmpty() || binding.playlistDescription.text.isNotEmpty() || binding.addCover.drawable != null) {
             confirmDialog.show()
         } else {
         findNavController().popBackStack()}
