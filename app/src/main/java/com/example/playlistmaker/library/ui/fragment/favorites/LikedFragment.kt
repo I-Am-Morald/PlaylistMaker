@@ -1,4 +1,4 @@
-package com.example.playlistmaker.library.ui.fragment
+package com.example.playlistmaker.library.ui.fragment.favorites
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.playlistmaker.databinding.FragmentLikedBinding
+import com.example.playlistmaker.library.ui.fragment.LibraryFragmentDirections
 import com.example.playlistmaker.library.ui.view_model.LikedViewModel
 import com.example.playlistmaker.search.domain.models.Track
 import com.example.playlistmaker.search.ui.fragment.TracksAdapter

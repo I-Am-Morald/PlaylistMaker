@@ -40,6 +40,8 @@
     <string name="genre">Жанр</string>
     <string name="country">Страна</string>
     <string name="unknown">Неизвестно</string>
+    <string name="add_paylist">Добавить в плейлист</string>
+    <string name="not_found">"Трек не найден"</string>
 
     <!-- Activity Library -->
 
@@ -48,4 +50,21 @@
     <string name="no_liked_tracks">Ваша медиатека пуста</string>
     <string name="no_playlists">Вы не создали\n ни одного плейлиста</string>
     <string name="new_playlist">Новый плейлист</string>
+    <string name="playlist_name">Название*</string>
+    <string name="playlist_description">Описание</string>
+    <string name="playlist_create">Создать</string>
+    
+    <!-- Create playlist -->
+
+    <string name="playlist_created"> "Плейлист %s создан",</string>
+    <string name="playlist_dir">PlaylistAlbum</string>
+    <string name="dialog_title">Завершить создание плейлиста?</string>
+    <string name="dialog_message">Все несохраненные данные будут потеряны</string>
+    <string name="dialog_cancel">Отмена</string>
+    <string name="dialog_confirm">Завершить</string>
+    <string name="add_track_exist">Трек уже добавлен в плейлист</string>
+    <string name="add_track_success">Добавлено в плейлист</string>
+    <string name="add_track_error">При добавлении трека что-то пошло не так.</string>
+    
+
 </resources>
