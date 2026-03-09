@@ -146,4 +146,10 @@
         <item name="android:textColor">@color/YP_blue</item>
     </style>
 
+    <style name="PlaylistCountStyle">
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/YP_black</item>
+    </style>
+
 </resources>

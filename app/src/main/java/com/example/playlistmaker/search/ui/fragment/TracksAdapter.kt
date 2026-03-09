@@ -7,9 +7,11 @@ import com.example.playlistmaker.R
 import com.example.playlistmaker.search.domain.models.Track
 
 class TracksAdapter(
-    private var tracks: MutableList<Track>,
+    private val tracks: MutableList<Track>,
     private val onTrackClick: (Track) -> Unit
 ) : RecyclerView.Adapter<TracksViewHolder>() {
+
+    var onTrackClickLong: (Track) -> Boolean = {false}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TracksViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_track, parent, false)
@@ -20,6 +22,7 @@ class TracksAdapter(
         val track = tracks[position]
         holder.bind(track)
         holder.itemView.setOnClickListener { onTrackClick(track) }
+        holder.itemView.setOnLongClickListener { onTrackClickLong(tracks[position])}
     }
 
     override fun getItemCount(): Int {

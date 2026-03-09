@@ -4,9 +4,7 @@ import com.example.playlistmaker.db.data.entity.PlaylistEntity
 import com.example.playlistmaker.library.ui.domain.models.Playlist
 import com.google.gson.Gson
 
-class PlaylistsDbConvertor {
-
-    val gson: Gson = Gson()
+class PlaylistsDbConvertor(private val gson: Gson) {
 
     fun mapToEntity(playlist: Playlist): PlaylistEntity {
         return PlaylistEntity(

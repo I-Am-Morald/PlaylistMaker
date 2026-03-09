@@ -22,6 +22,7 @@ class PlaylistFragment : Fragment() {
 
     private lateinit var playlistAdapter: PlaylistAdapter
 
+    private var isClickAllowed = true
     private var playlists: MutableList<Playlist> = mutableListOf()
 
     override fun onCreateView(
@@ -39,14 +40,15 @@ class PlaylistFragment : Fragment() {
         viewModel.getPlaylists().observe(viewLifecycleOwner) { state ->
             render(state)
         }
+
+        viewModel.isClickAllowed.observe(viewLifecycleOwner) { isClickAllowed = it}
+
         val onPlaylistClick: (Playlist) -> Unit = { playlist ->
-            //doNothing()
-            /*            if (isClickAllowed) {
+            if (isClickAllowed) {
                             viewModel.clickDebounce()
-                            val action =
-                                LibraryFragmentDirections.actionLibraryFragmentToSOMEWHERE(SOMETHING)
+                            val action = LibraryFragmentDirections.actionLibraryFragmentToPlaylistInfoFragment(playlist)
                             findNavController().navigate(action)
-                        }*/
+                        }
         }
 
         playlistAdapter = PlaylistAdapter(playlists, onPlaylistClick)
@@ -54,7 +56,7 @@ class PlaylistFragment : Fragment() {
         binding.recyclerView.adapter = playlistAdapter
 
         binding.createPlaylistButton.setOnClickListener {
-            val action = LibraryFragmentDirections.actionLibraryFragmentToPlaylistCreateFragment()
+            val action = LibraryFragmentDirections.actionLibraryFragmentToPlaylistCreateFragment(null)
             findNavController().navigate(action)
         }
     }
