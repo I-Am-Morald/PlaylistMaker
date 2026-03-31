@@ -96,12 +96,13 @@
             app:layout_constraintStart_toStartOf="@id/leftBorder"
             app:layout_constraintTop_toTopOf="@id/play_button" />
 
-        <ImageView
+        <com.example.playlistmaker.media_player.ui.fragment.PlaybackButtonView
             android:id="@+id/play_button"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginTop="28dp"
-            android:src="@drawable/ic_play_button_100"
+            app:imagePlayResId="@drawable/ic_play_button_100"
+            app:imagePauseResId="@drawable/ic_pause_button_100"
             app:layout_constraintEnd_toStartOf="@id/rightBorder"
             app:layout_constraintStart_toStartOf="@id/leftBorder"
             app:layout_constraintTop_toBottomOf="@id/media_artist_name" />
