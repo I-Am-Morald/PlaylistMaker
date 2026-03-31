@@ -1,7 +1,6 @@
 package com.example.playlistmaker.media_player.ui.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -55,7 +54,7 @@ class MediaPlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         if (args.track == null) {
-            Toast.makeText(requireContext(), getString(R.string.not_found), Toast.LENGTH_SHORT)
+            Toast.makeText(requireContext(), getString(R.string.track_not_found), Toast.LENGTH_SHORT)
                 .show()
             return
         }
@@ -211,7 +210,7 @@ class MediaPlayerFragment : Fragment() {
 
         binding.addPlaylistButton.setOnClickListener {
             val action =
-                MediaPlayerFragmentDirections.actionMediaPlayerFragmentToPlaylistCreateFragment()
+                MediaPlayerFragmentDirections.actionMediaPlayerFragmentToPlaylistCreateFragment(null)
             findNavController().navigate(action)
         }
 

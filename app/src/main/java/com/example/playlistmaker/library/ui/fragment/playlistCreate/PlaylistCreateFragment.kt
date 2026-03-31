@@ -1,4 +1,4 @@
-package com.example.playlistmaker.library.ui.fragment.playlist
+package com.example.playlistmaker.library.ui.fragment.playlistCreate
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -17,14 +17,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.FragmentPlaylistCreateBinding
+import com.example.playlistmaker.library.ui.domain.models.Playlist
 import com.example.playlistmaker.library.ui.view_model.PlaylistCreateViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.getValue
 
 class PlaylistCreateFragment : Fragment() {
     private var _binding: FragmentPlaylistCreateBinding? = null
@@ -32,6 +35,8 @@ class PlaylistCreateFragment : Fragment() {
 
     private var imageUri: Uri? = null
     lateinit var confirmDialog: MaterialAlertDialogBuilder
+    private val args: PlaylistCreateFragmentArgs by navArgs()
+    private lateinit var playlist: Playlist
 
     private val viewModel: PlaylistCreateViewModel by viewModel()
 
@@ -41,11 +46,18 @@ class PlaylistCreateFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPlaylistCreateBinding.inflate(inflater, container, false)
+
+        viewModel.setFragmentState(args.playlist)
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel.getState().observe(viewLifecycleOwner) { state ->
+            render(state)
+        }
 
         val pickMedia =
             registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -61,7 +73,7 @@ class PlaylistCreateFragment : Fragment() {
         binding.createButton.isEnabled = false
 
         confirmDialog = MaterialAlertDialogBuilder(requireContext(), R.style.MyAlertDialog)
-            .setTitle(R.string.dialog_title)
+            .setTitle(R.string.dialog_create_title)
             .setMessage(R.string.dialog_message)
             .setNeutralButton(R.string.dialog_cancel) { dialog, which -> }
             .setPositiveButton(R.string.dialog_confirm) { dialog, which -> findNavController().popBackStack() }
@@ -80,7 +92,8 @@ class PlaylistCreateFragment : Fragment() {
                 } else {
                     binding.createButton.isEnabled = false
                     binding.createButton.setBackgroundColor(
-                        ContextCompat.getColor(requireContext(), R.color.YP_text_gray))
+                        ContextCompat.getColor(requireContext(), R.color.YP_text_gray)
+                    )
                 }
             }
 
@@ -107,16 +120,41 @@ class PlaylistCreateFragment : Fragment() {
 
         binding.createButton.setOnClickListener {
             val playlistName = binding.playlistName.text
+            val name = binding.playlistName.text.toString()
+            val description = binding.playlistDescription.text.toString()
+            val path = imageUri?.let { saveImageToPrivateStorage(it, name) }
+            viewModel.savePlaylist(name, description, path)
             Toast.makeText(
                 requireContext(),
                 getString(R.string.playlist_created, playlistName),
                 Toast.LENGTH_SHORT
             ).show()
-            val name = binding.playlistName.text.toString()
-            val description = binding.playlistDescription.text.toString()
-            val path = imageUri?.let { saveImageToPrivateStorage(it, name) }
-            viewModel.addPlaylist(name, description, path)
             findNavController().popBackStack()
+        }
+    }
+
+    private fun render(state: FragmentState) {
+        when (state) {
+            is FragmentState.Create -> {
+            }
+
+            is FragmentState.Edit -> {
+                playlist = state.data
+
+                binding.playlistViewTitle.text = getString(R.string.playlist_edit_title)
+                binding.createButton.text = getString(R.string.playlist_edit_button)
+                binding.playlistName.setText(playlist.playlistName)
+
+                if (!playlist.playlistDescription.isNullOrEmpty()) {
+                    binding.playlistDescription.setText(playlist.playlistDescription)
+                }
+                if (!playlist.coverPath.isNullOrEmpty()) {
+                    Glide.with(this)
+                        .load(playlist.coverPath)
+                        .centerCrop()
+                        .into(binding.addCover)
+                }
+            }
         }
     }
 
@@ -138,10 +176,19 @@ class PlaylistCreateFragment : Fragment() {
     }
 
     private fun backPressed() {
-        if (binding.playlistName.text.isNotEmpty() || binding.playlistDescription.text.isNotEmpty() || binding.addCover.drawable != null) {
-            confirmDialog.show()
+        if (args.playlist == null) {
+            if (binding.playlistName.text.isNotEmpty() || binding.playlistDescription.text.isNotEmpty() || binding.addCover.drawable != null) {
+                confirmDialog.show()
+            } else {
+                findNavController().popBackStack()
+            }
         } else {
-        findNavController().popBackStack()}
+            findNavController().popBackStack()
+        }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

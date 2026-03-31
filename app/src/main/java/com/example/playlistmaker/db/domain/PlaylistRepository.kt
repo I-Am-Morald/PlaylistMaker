@@ -7,12 +7,16 @@ import kotlinx.coroutines.flow.Flow
 interface PlaylistRepository {
 
     suspend fun addPlaylist(playlist: Playlist)
-    suspend fun deletePlaylist(playlist: Playlist)
+    suspend fun deletePlaylist(playlistId: Long)
     suspend fun getCountTracks(playlistId: Long)
     suspend fun updatePlayList(playlist: Playlist)
+    suspend fun getPlaylist(playlistId: Long) : Playlist
     fun listPlaylists(): Flow<List<Playlist>>
 
+    fun getPlaylistTracks(trackIds: List<String>): Flow<List<Track>>
+    suspend fun getTracksDuration(trackIds: List<String>): String
     suspend fun addPlaylistTrack(playlist: Playlist, track: Track): Boolean
-    suspend fun getPlaylistTrack(trackId: String)
-    suspend fun deletePlaylistTrack(trackId: String)
+    suspend fun deletePlaylistTrack(playlist: Playlist, track: Track): Boolean
+
+    suspend fun sharePlaylist(playlist: Playlist)
 }

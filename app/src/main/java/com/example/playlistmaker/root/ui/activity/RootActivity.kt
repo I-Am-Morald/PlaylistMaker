@@ -32,7 +32,7 @@ class RootActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.mediaPlayerFragment, R.id.playlistCreateFragment -> {
+                R.id.mediaPlayerFragment, R.id.playlistCreateFragment, R.id.playlistInfoFragment -> {
 
                     binding.bottomNavigationView.visibility = android.view.View.GONE
                 }

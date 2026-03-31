@@ -16,7 +16,7 @@ class PlaylistViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val playlistCover: ImageView = itemView.findViewById(R.id.playlist_cover)
     fun bind(model: Playlist) {
         playlistName.text = model.playlistName
-        trackCount.text = model.trackCount.toString() + formatCount(model.trackCount)
+        trackCount.text = formatCount(model.trackCount)
         Glide.with(itemView).load(model.coverPath)
             .placeholder(R.drawable.ic_placeholder_312)
             .transform(RoundedCorners(itemView.resources.getDimensionPixelSize(R.dimen.track_image_corner)))
@@ -24,9 +24,9 @@ class PlaylistViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
 
     private fun formatCount(count: Int): String = when {
-        count % 100 in 11..19 -> " треков"
-        count % 10 == 1 -> " трек"
-        count % 10 in 2..4 -> " трека"
-        else -> " треков"
+        count % 100 in 11..19 -> "$count треков"
+        count % 10 == 1 -> "$count трек"
+        count % 10 in 2..4 -> "$count трека"
+        else -> "$count треков"
     }
 }

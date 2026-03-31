@@ -24,6 +24,7 @@
             android:src="@drawable/ic_arrow_back_24" />
 
         <TextView
+            android:id = "@+id/playlist_view_title"
             style="@style/TitleActivityTextStyle"
             android:layout_marginStart="12dp"
             android:text="@string/new_playlist" />
@@ -43,9 +44,9 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="26dp"
         android:layout_marginEnd="24dp"
-        app:cardCornerRadius="8dp"
         android:background="@drawable/playlist_create_background"
         android:clipToOutline="true"
+        app:cardCornerRadius="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/new_playlist_title">
@@ -55,12 +56,12 @@
             android:layout_height="match_parent"
             android:background="@drawable/playlist_create_background">
 
-        <ImageView
-            android:id="@+id/add_cover"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            tool:src="@tools:sample/avatars" />
+            <ImageView
+                android:id="@+id/add_cover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                tool:src="@tools:sample/avatars" />
         </FrameLayout>
 
     </androidx.cardview.widget.CardView>
@@ -103,6 +104,7 @@
     <Button
         android:id="@+id/create_button"
         android:layout_width="match_parent"
+        android:padding="0dp"
         android:layout_height="44dp"
         android:layout_marginStart="17dp"
         android:layout_marginEnd="17dp"
@@ -115,5 +117,5 @@
         android:textFontWeight="500"
         android:textSize="16sp"
         app:cornerRadius="8dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
