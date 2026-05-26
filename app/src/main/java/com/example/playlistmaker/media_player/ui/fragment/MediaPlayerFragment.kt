@@ -119,11 +119,11 @@ class MediaPlayerFragment : Fragment() {
     private fun render(mediaState: MediaPlayerState) {
         when (mediaState) {
             is MediaPlayerState.Prepared -> binding.playButton.isEnabled = true
-            is MediaPlayerState.Playing -> binding.playButton.setImageResource(R.drawable.ic_pause_button_100)
-            is MediaPlayerState.Paused -> binding.playButton.setImageResource(R.drawable.ic_play_button_100)
+            is MediaPlayerState.Playing -> binding.playButton.buttonState(true)
+            is MediaPlayerState.Paused -> binding.playButton.buttonState(false)
             is MediaPlayerState.Timer -> binding.currentDuration.text = mediaState.data
             is MediaPlayerState.Complete -> {
-                binding.playButton.setImageResource(R.drawable.ic_play_button_100)
+                binding.playButton.buttonState(false)
                 binding.currentDuration.text = getString(R.string.default_value)
             }
         }
@@ -214,7 +214,7 @@ class MediaPlayerFragment : Fragment() {
             findNavController().navigate(action)
         }
 
-        binding.playButton.setOnClickListener {
+        binding.playButton.playbackClickListener = {
                 viewModel.playbackControl()
         }
 
