@@ -34,7 +34,7 @@ val viewModelModule = module {
     }
 
     viewModel {
-        MediaPlayerViewModel(get(), get(), get(), get())
+        MediaPlayerViewModel(get(), get(), get())
     }
 
     viewModel {
