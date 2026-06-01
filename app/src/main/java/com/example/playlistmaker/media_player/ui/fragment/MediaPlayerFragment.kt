@@ -1,11 +1,19 @@
 package com.example.playlistmaker.media_player.ui.fragment
 
+import android.Manifest
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -18,6 +26,8 @@ import com.example.playlistmaker.databinding.FragmentMediaplayerBinding
 import com.example.playlistmaker.library.ui.domain.models.Playlist
 import com.example.playlistmaker.library.ui.fragment.playlist.PlaylistBottomSheetAdapter
 import com.example.playlistmaker.library.ui.view_model.AddTrackState
+import com.example.playlistmaker.media_player.service.MediaPlayerService
+import com.example.playlistmaker.media_player.service.MediaPlayerState
 import com.example.playlistmaker.media_player.ui.view_model.MediaPlayerViewModel
 import com.example.playlistmaker.search.domain.models.Track
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -41,6 +51,28 @@ class MediaPlayerFragment : Fragment() {
 
     private var playlists: MutableList<Playlist> = mutableListOf()
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            bindMediaPlayerService()
+        } else {
+            Toast.makeText(requireContext(), "Can't start foreground service!", Toast.LENGTH_LONG)
+                .show()
+        }
+    }
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MediaPlayerService.MediaPlayerServiceBinder
+            viewModel.setMediaPlayerControl(binder.getService())
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            viewModel.removeMediaPlayerControl()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -54,7 +86,11 @@ class MediaPlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         if (args.track == null) {
-            Toast.makeText(requireContext(), getString(R.string.track_not_found), Toast.LENGTH_SHORT)
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.track_not_found),
+                Toast.LENGTH_SHORT
+            )
                 .show()
             return
         }
@@ -73,7 +109,11 @@ class MediaPlayerFragment : Fragment() {
         initBottomSheet()
         buttonBinding()
 
-        viewModel.preparePlayer()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            bindMediaPlayerService()
+        }
     }
 
     private fun observers() {
@@ -100,8 +140,10 @@ class MediaPlayerFragment : Fragment() {
 
                 is AddTrackState.Success -> {
                     message = getString(R.string.add_track_success) + " " + status.playlistName
-                    bottomSheetBehavior = BottomSheetBehavior.from(binding.playlistsBottomSheet).apply {
-                        state = BottomSheetBehavior.STATE_HIDDEN}
+                    bottomSheetBehavior =
+                        BottomSheetBehavior.from(binding.playlistsBottomSheet).apply {
+                            state = BottomSheetBehavior.STATE_HIDDEN
+                        }
                 }
 
                 is AddTrackState.AlreadyExist -> {
@@ -117,16 +159,9 @@ class MediaPlayerFragment : Fragment() {
     }
 
     private fun render(mediaState: MediaPlayerState) {
-        when (mediaState) {
-            is MediaPlayerState.Prepared -> binding.playButton.isEnabled = true
-            is MediaPlayerState.Playing -> binding.playButton.buttonState(true)
-            is MediaPlayerState.Paused -> binding.playButton.buttonState(false)
-            is MediaPlayerState.Timer -> binding.currentDuration.text = mediaState.data
-            is MediaPlayerState.Complete -> {
-                binding.playButton.buttonState(false)
-                binding.currentDuration.text = getString(R.string.default_value)
-            }
-        }
+        binding.playButton.isEnabled = mediaState.isPlayButtonEnabled
+        binding.playButton.buttonState(mediaState.isButtonPaused)
+        binding.currentDuration.text = mediaState.progress
     }
 
     private fun getTrackFromArguments() {
@@ -141,7 +176,6 @@ class MediaPlayerFragment : Fragment() {
         binding.durationValue.text = trackTime
 
         val artworkUrl = playedTrack.getCoverArtwork()
-        viewModel.setPreviewUrl(playedTrack.previewUrl)
 
         Glide.with(this)
             .load(artworkUrl)
@@ -215,7 +249,7 @@ class MediaPlayerFragment : Fragment() {
         }
 
         binding.playButton.playbackClickListener = {
-                viewModel.playbackControl()
+            viewModel.playbackControl()
         }
 
         binding.backButton.setOnClickListener {
@@ -227,20 +261,35 @@ class MediaPlayerFragment : Fragment() {
         }
     }
 
+    private fun bindMediaPlayerService() {
+        val intent = Intent(requireContext(), MediaPlayerService::class.java).apply {
+            putExtra("preview_url", playedTrack.previewUrl)
+            putExtra("artist_name", playedTrack.artistName)
+            putExtra("track_name", playedTrack.trackName)
+        }
+
+        requireContext().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun unbindMediaPlayerService() {
+        requireContext().unbindService(serviceConnection)
+    }
+
     override fun onResume() {
         super.onResume()
         BottomSheetBehavior.from(binding.playlistsBottomSheet).apply {
             state = BottomSheetBehavior.STATE_HIDDEN
         }
+        viewModel.stopForegroundNotification()
     }
 
     override fun onPause() {
-        viewModel.mediaPlayerOnPaused()
         super.onPause()
+        viewModel.startForegroundNotification()
     }
 
     override fun onDestroy() {
-        viewModel.releasePlayer()
+        unbindMediaPlayerService()
         super.onDestroy()
     }
 
