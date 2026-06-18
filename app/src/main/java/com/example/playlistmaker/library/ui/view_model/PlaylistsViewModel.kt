@@ -8,22 +8,20 @@ import com.example.playlistmaker.db.domain.PlaylistInteractor
 import com.example.playlistmaker.library.ui.domain.models.Playlist
 import com.example.playlistmaker.library.ui.fragment.playlist.PlaylistsState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class PlaylistViewModel(private val playlistInteractor: PlaylistInteractor) : ViewModel() {
+class PlaylistsViewModel(private val playlistInteractor: PlaylistInteractor) : ViewModel() {
 
-    private val playlists = MutableLiveData<PlaylistsState>()
-    fun getPlaylists(): LiveData<PlaylistsState> = playlists
+    private val _playlists = MutableStateFlow<PlaylistsState>(PlaylistsState.NoData)
+    var playlists: StateFlow<PlaylistsState> = _playlists
 
     private val _isClickAllowed = MutableLiveData<Boolean>()
     val isClickAllowed: LiveData<Boolean>
         get() = _isClickAllowed
 
-    init {
-        loadPlaylists()
-    }
-
-    private fun loadPlaylists() {
+    fun loadPlaylists() {
         viewModelScope.launch {
             playlistInteractor.listPlaylists().collect { playlistsList ->
                 updatePlaylists(playlistsList)
@@ -33,9 +31,9 @@ class PlaylistViewModel(private val playlistInteractor: PlaylistInteractor) : Vi
 
     private fun updatePlaylists(playlistsList: List<Playlist>) {
         if (playlistsList.isEmpty()) {
-            playlists.value = PlaylistsState.NoData
+            _playlists.value = PlaylistsState.NoData
         } else {
-            playlists.value = PlaylistsState.Playlists(playlistsList)
+            _playlists.value = PlaylistsState.Playlists(playlistsList)
         }
     }
 

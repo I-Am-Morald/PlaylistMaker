@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.playlistmaker.databinding.FragmentLikedBinding
 import com.example.playlistmaker.library.ui.fragment.LibraryFragmentDirections
-import com.example.playlistmaker.library.ui.view_model.LikedViewModel
+import com.example.playlistmaker.library.ui.view_model.FavoritesViewModel
 import com.example.playlistmaker.search.domain.models.Track
 import com.example.playlistmaker.search.ui.fragment.TracksAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -19,7 +19,7 @@ class LikedFragment : Fragment() {
     private var _binding: FragmentLikedBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: LikedViewModel by viewModel()
+    private val viewModel: FavoritesViewModel by viewModel()
 
     private var isClickAllowed = true
 
@@ -52,9 +52,9 @@ class LikedFragment : Fragment() {
 
         binding.favoriteRecyclerView.adapter = favoritesAdapter
 
-        viewModel.getFavorite().observe(viewLifecycleOwner) { state ->
+/*        viewModel.getFavorite().observe(viewLifecycleOwner) { state ->
             render(state)
-        }
+        }*/
 
         viewModel.isClickAllowed.observe(viewLifecycleOwner) { isClickAllowed = it }
 
