@@ -13,6 +13,9 @@ import com.example.playlistmaker.search.domain.usecase.GetSearchHistoryUseCase
 import com.example.playlistmaker.search.ui.fragment.SearchState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
@@ -22,12 +25,12 @@ class SearchViewModel(
     private val clearSearchHistoryUseCase: ClearSearchHistoryUseCase
 ) : ViewModel() {
 
-    private var searchText = ""
+  //  private var searchText = ""
     private var searchJob: Job? = null
     private var latestSearchText: String = ""
 
-    private val state = MutableLiveData<SearchState>()
-    fun getState(): LiveData<SearchState> = state
+    private val _state = MutableStateFlow<SearchState>(SearchState.NoResult)
+    val state: StateFlow<SearchState> = _state.asStateFlow()
 
     private val _isClickAllowed = MutableLiveData<Boolean>()
     val isClickAllowed: LiveData<Boolean>
@@ -38,9 +41,10 @@ class SearchViewModel(
     }
 
     fun loadSearchHistory() {
+        searchJob?.cancel()
         viewModelScope.launch {
         val historyList = getSearchHistoryUseCase.execute()
-        state.value = SearchState.SearchHistory(data = historyList)
+        _state.value = SearchState.SearchHistory(data = historyList)
         }
     }
 
@@ -58,12 +62,12 @@ class SearchViewModel(
         val historyList = getSearchHistoryUseCase.execute()
         addTrackToSearchHistoryUseCase.execute(historyList, track)
         val historyListUpdated = getSearchHistoryUseCase.execute()
-        state.value = SearchState.SearchHistoryUpdated(data = historyListUpdated)
+        _state.value = SearchState.SearchHistoryUpdated(data = historyListUpdated)
     }
     }
 
-    fun setSearchText(text: String) {
-        searchText = text
+    fun refreshQuery() {
+        searchQuery(latestSearchText)
     }
 
     fun clickDebounce() {
@@ -78,7 +82,7 @@ class SearchViewModel(
         }
     }
 
-    fun searchDebounce() {
+    fun searchDebounce(searchText: String) {
         if (latestSearchText == searchText) {
             return
         }
@@ -91,7 +95,8 @@ class SearchViewModel(
     }
 
     fun searchQuery(query: String) {
-        state.value = SearchState.Loading
+        searchJob?.cancel()
+        _state.value = SearchState.Loading
         viewModelScope.launch {
             trackInteractor
                 .searchTracks(query)
@@ -100,14 +105,14 @@ class SearchViewModel(
                         ResponseStatus.SUCCESS -> {
                             if (pair.first.isNotEmpty()) {
                                 val result = SearchState.SearchTrackList(data = pair.first)
-                                state.postValue(result)
+                                _state.value = result
                             } else {
-                                state.postValue(SearchState.NoResult)
+                                _state.value = SearchState.NoResult
                             }
                         }
 
                         ResponseStatus.ERROR -> {
-                            state.postValue(SearchState.Error)
+                            _state.value = SearchState.Error
                         }
                     }
                 }

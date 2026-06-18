@@ -8,12 +8,15 @@ import com.example.playlistmaker.db.domain.FavoritesInteractor
 import com.example.playlistmaker.library.ui.fragment.favorites.FavoriteState
 import com.example.playlistmaker.search.domain.models.Track
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LikedViewModel(private val favoritesInteractor: FavoritesInteractor) : ViewModel() {
+class FavoritesViewModel(private val favoritesInteractor: FavoritesInteractor) : ViewModel() {
 
-    private val favorite = MutableLiveData<FavoriteState>()
-    fun getFavorite(): LiveData<FavoriteState> = favorite
+    private val _favorite = MutableStateFlow<FavoriteState>(FavoriteState.NoData)
+    var favorite: StateFlow<FavoriteState> = _favorite.asStateFlow()
 
     private val _isClickAllowed = MutableLiveData<Boolean>()
     val isClickAllowed: LiveData<Boolean>
@@ -29,9 +32,9 @@ class LikedViewModel(private val favoritesInteractor: FavoritesInteractor) : Vie
 
     private fun updateFavoriteState(favoriteList: List<Track>) {
         if (favoriteList.isEmpty()) {
-            favorite.value = FavoriteState.NoData
+            _favorite.value = FavoriteState.NoData
         } else {
-            favorite.value = FavoriteState.FavoriteTracksList(data = favoriteList)
+            _favorite.value = FavoriteState.FavoriteTracksList(data = favoriteList)
         }
     }
 

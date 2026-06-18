@@ -10,7 +10,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.playlistmaker.databinding.FragmentPlaylistBinding
 import com.example.playlistmaker.library.ui.domain.models.Playlist
 import com.example.playlistmaker.library.ui.fragment.LibraryFragmentDirections
-import com.example.playlistmaker.library.ui.view_model.PlaylistViewModel
+import com.example.playlistmaker.library.ui.view_model.PlaylistsViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PlaylistFragment : Fragment() {
@@ -18,7 +18,7 @@ class PlaylistFragment : Fragment() {
     private var _binding: FragmentPlaylistBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by viewModel<PlaylistViewModel>()
+    private val viewModel by viewModel<PlaylistsViewModel>()
 
     private lateinit var playlistAdapter: PlaylistAdapter
 
@@ -37,9 +37,9 @@ class PlaylistFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.getPlaylists().observe(viewLifecycleOwner) { state ->
+ /*       viewModel.getPlaylists().observe(viewLifecycleOwner) { state ->
             render(state)
-        }
+        }*/
 
         viewModel.isClickAllowed.observe(viewLifecycleOwner) { isClickAllowed = it}
 
